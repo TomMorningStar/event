@@ -74,9 +74,9 @@ function Pending({ prize, sample }) {
 export default function Public() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
-  const seen = useRef(null) // id победителей, уже известных странице
-  const [queue, setQueue] = useState([]) // победители, ожидающие анимации
-  const [revealed, setRevealed] = useState(() => new Set()) // id, показанные в списке
+  const seen = useRef(null)
+  const [queue, setQueue] = useState([])
+  const [revealed, setRevealed] = useState(() => new Set())
   const sampleRef = useRef([])
 
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function Public() {
             fresh.forEach((w) => seen.current.add(w.id))
             setQueue((q) => [...q, ...fresh])
           }
-          // отменённые победители
+
           const ids = new Set(winners.map((w) => w.id))
           setRevealed((r) => new Set([...r].filter((id) => ids.has(id))))
         }

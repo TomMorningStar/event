@@ -35,14 +35,10 @@ function Reel({ digit, index }) {
   )
 }
 
-/**
- * Анимация выбора билета: цифры номера крутятся барабанами и по очереди останавливаются,
- * затем проявляются ФИО и телефон победителя.
- */
 export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
   const digits = [...winner.ticket]
   const total = 2.6 + (digits.length - 1) * 0.45
-  const [phase, setPhase] = useState('roll') // roll -> reveal
+  const [phase, setPhase] = useState('roll')
   const [shuffle, setShuffle] = useState(sample[0])
 
   useEffect(() => {

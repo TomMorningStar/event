@@ -27,34 +27,46 @@ function ClientRow({ c }) {
 
 export default function Clients() {
   const nav = useNavigate()
-  const [q, setQ] = useState('')
-  const [query, setQuery] = useState('')
+  const [filters, setFilters] = useState({ q: '', sort: 'count_desc', min: '', max: '', winners: false })
+  const [applied, setApplied] = useState(filters)
   const [page, setPage] = useState(1)
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
-  // поиск с задержкой, чтобы не дёргать сервер на каждую букву
+  const set = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value }))
+  const reset = () => setFilters({ q: '', sort: 'count_desc', min: '', max: '', winners: false })
+  const dirty = filters.q || filters.min || filters.max || filters.winners || filters.sort !== 'count_desc'
+
   useEffect(() => {
     const id = setTimeout(() => {
-      setQuery(q)
+      setApplied(filters)
       setPage(1)
     }, 300)
     return () => clearTimeout(id)
-  }, [q])
+  }, [filters])
 
   useEffect(() => {
     let stop = false
-    api.clients(query, page).then(
-      (d) => !stop && (setData(d), setError('')),
-      (e) => {
-        if (e.status === 401) return nav('/login', { replace: true })
-        setError(e.message)
-      },
-    )
+    api
+      .clients({
+        q: applied.q,
+        sort: applied.sort,
+        min: applied.min,
+        max: applied.max,
+        winners: applied.winners ? '1' : '0',
+        page,
+      })
+      .then(
+        (d) => !stop && (setData(d), setError('')),
+        (e) => {
+          if (e.status === 401) return nav('/login', { replace: true })
+          setError(e.message)
+        },
+      )
     return () => {
       stop = true
     }
-  }, [query, page, nav])
+  }, [applied, page, nav])
 
   return (
     <div className="page admin">
@@ -69,14 +81,38 @@ export default function Clients() {
         <input
           className="search"
           placeholder="Поиск по ФИО, телефону или номеру билета"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
+          value={filters.q}
+          onChange={set('q')}
           autoFocus
         />
+        <div className="filters">
+          <label>
+            Сортировка
+            <select value={filters.sort} onChange={set('sort')}>
+              <option value="count_desc">Больше билетов</option>
+              <option value="count_asc">Меньше билетов</option>
+              <option value="name_asc">ФИО А → Я</option>
+              <option value="name_desc">ФИО Я → А</option>
+            </select>
+          </label>
+          <label>
+            Билетов от
+            <input type="number" min="0" inputMode="numeric" value={filters.min} onChange={set('min')} placeholder="0" />
+          </label>
+          <label>
+            до
+            <input type="number" min="0" inputMode="numeric" value={filters.max} onChange={set('max')} placeholder="∞" />
+          </label>
+          <label className="check">
+            <input type="checkbox" checked={filters.winners} onChange={set('winners')} />
+            Только победители
+          </label>
+          {dirty && <button className="btn" onClick={reset}>Сбросить</button>}
+        </div>
         {error && <div className="error">{error}</div>}
         {data && (
           <p className="muted small">
-            Найдено {fmt(data.total)} из {fmt(data.totalClients)} клиентов
+            Найдено {fmt(data.total)} из {fmt(data.totalClients)} клиентов · {fmt(data.totalTickets)} билетов
           </p>
         )}
 

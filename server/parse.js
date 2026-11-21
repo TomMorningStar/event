@@ -1,30 +1,35 @@
 import * as XLSX from 'xlsx'
 
+export const NO_NAME = 'Не указано ФИО'
+
 const norm = (v) => String(v ?? '').replace(/\s+/g, ' ').trim()
 
-/** Шаблон Excel: колонка A — номер билета, B — ФИО, C — телефон. Первая строка — заголовок. */
 export function parseWorkbook(buffer) {
   const wb = XLSX.read(buffer, { type: 'buffer', cellDates: false })
   const ws = wb.Sheets[wb.SheetNames[0]]
   const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false })
   if (rows.length < 2) throw new Error('Файл пустой')
 
-  const stats = { total: rows.length - 1, invalid: 0, duplicates: 0 }
+  const stats = { total: rows.length - 1, invalid: 0, duplicates: 0, noName: 0 }
   const seen = new Set()
   const tickets = []
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r]
     const ticket = norm(row[0])
-    const name = norm(row[1])
+    let name = norm(row[1])
     let phone = norm(row[2])
     if (phone && !phone.startsWith('+') && /^\d{10,}$/.test(phone)) {
       if (phone.length === 11 && phone[0] === '8') phone = '7' + phone.slice(1)
       phone = '+' + phone
     }
-    if (!ticket || !name || !phone) {
+    if (!ticket || !phone) {
       stats.invalid++
       continue
+    }
+    if (!name) {
+      name = NO_NAME
+      stats.noName++
     }
     if (seen.has(ticket)) {
       stats.duplicates++
@@ -38,7 +43,6 @@ export function parseWorkbook(buffer) {
   return { tickets, stats }
 }
 
-/** +79389040257 -> +7938904**** (последние 4 цифры скрыты) */
 export function maskPhone(phone) {
   let left = 4
   const chars = [...phone]

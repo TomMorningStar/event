@@ -27,10 +27,9 @@ export default function Admin() {
 
   useEffect(() => {
     run('load', api.adminState)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [])
 
-  // пока идёт розыгрыш — опрашиваем сервер, чтобы увидеть результат drand
   const hasPending = state?.prizes.some((p) => p.pending)
   useEffect(() => {
     if (!hasPending) return
@@ -103,7 +102,8 @@ export default function Admin() {
           <div className="stats">
             <div><b>{fmt(tickets.count)}</b><span>билетов в розыгрыше</span></div>
             <div><b>{fmt(s?.participants)}</b><span>уникальных телефонов</span></div>
-            <div className="warn"><b>{fmt(s?.invalid)}</b><span>без ФИО/телефона (пропущены)</span></div>
+            <div><b>{fmt(s?.noName)}</b><span>без ФИО (участвуют)</span></div>
+            <div className="warn"><b>{fmt(s?.invalid)}</b><span>без телефона (пропущены)</span></div>
             <div className="warn"><b>{fmt(s?.duplicates)}</b><span>дубликатов номера</span></div>
             <div className="file">listHash: <code className="break">{tickets.listHash}</code></div>
             <div className="file">{tickets.fileName} · {new Date(tickets.uploadedAt).toLocaleString('ru-RU')}</div>

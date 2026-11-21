@@ -29,8 +29,7 @@ const safeEq = (a, b) => {
   return crypto.timingSafeEqual(ha, hb)
 }
 
-// ---------- auth ----------
-const attempts = new Map() // ip -> { n, until }
+const attempts = new Map()
 app.post('/api/login', (req, res) => {
   const ip = req.ip
   const a = attempts.get(ip)
@@ -62,7 +61,6 @@ const requireAdmin = (req, res, next) => {
 }
 app.get('/api/admin/me', requireAdmin, (_req, res) => res.json({ ok: true }))
 
-// ---------- admin ----------
 const adminState = () => {
   const { prizes, draws } = store.getState()
   return {
@@ -116,11 +114,19 @@ app.delete(
 )
 
 app.get('/api/admin/clients', requireAdmin, (req, res) => {
-  const page = Math.max(1, parseInt(req.query.page) || 1)
-  res.json(store.searchClients(req.query.q, page))
+  const num = (v) => Math.max(0, parseInt(v) || 0)
+  res.json(
+    store.searchClients({
+      q: req.query.q,
+      page: Math.max(1, parseInt(req.query.page) || 1),
+      sort: req.query.sort,
+      min: num(req.query.min),
+      max: num(req.query.max),
+      winners: req.query.winners === '1',
+    }),
+  )
 })
 
-// ---------- public (телефон маскируется на сервере, полный номер наружу не уходит) ----------
 const publicDraw = ({ name, phone, ...d }, withExcluded) => ({
   ...d,
   excluded: withExcluded ? d.excluded : undefined,
@@ -134,7 +140,7 @@ app.get('/api/public/state', (_req, res) => {
   const all = store.getTickets()
   const sample = []
   for (let i = 0; i < Math.min(60, all.length); i++) {
-    // только для декоративной анимации; к выбору победителя отношения не имеет
+
     const t = all[crypto.randomInt(all.length)]
     sample.push({ ticket: t[0], name: t[1], phone: maskPhone(t[2]) })
   }
@@ -166,7 +172,6 @@ app.get('/api/public/lists/:hash.txt', (req, res) => {
   res.sendFile(file)
 })
 
-// ---------- static (production) ----------
 const dist = path.resolve('dist')
 if (fs.existsSync(dist)) {
   app.use(express.static(dist))

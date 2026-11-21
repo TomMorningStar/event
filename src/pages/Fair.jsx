@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api.js'
+import fairSource from '../../shared/fair.js?raw'
 import { verifyDraw, beaconUrl, DRAND, roundTime } from '../../shared/fair.js'
 
 const STATUS = { pending: 'Ожидает drand', done: 'Завершён', cancelled: 'Отменён' }
@@ -18,7 +19,7 @@ function DrawCard({ d, getList }) {
     try {
       const text = await getList(d.listHash)
       const res = verifyDraw(d, text ? text.split('\n') : [])
-      // перекрёстная проверка напрямую у drand
+
       try {
         const r = await fetch(beaconUrl(d.round), { signal: AbortSignal.timeout(6000) })
         const b = await r.json()
@@ -89,6 +90,47 @@ function DrawCard({ d, getList }) {
   )
 }
 
+function SourceCode() {
+  const [hash, setHash] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    if (!crypto?.subtle) return
+    crypto.subtle
+      .digest('SHA-256', new TextEncoder().encode(fairSource))
+      .then((buf) => setHash([...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('')))
+  }, [])
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(fairSource)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    } catch {
+      setCopied(false)
+    }
+  }
+
+  return (
+    <section className="panel">
+      <h2>Исходный код алгоритма</h2>
+      <p className="muted small">
+        Весь выбор победителя — один файл <code>shared/fair.js</code>. Его же вызывают сервер при розыгрыше, эта страница и скрипт проверки,
+        отдельной «боевой» версии нет. Функции <code>buildPool</code> и <code>chooseWinner</code> — единственное, что определяет победителя.
+      </p>
+      {hash && (
+        <p className="small">
+          SHA-256 файла: <code className="break">{hash}</code>
+        </p>
+      )}
+      <div className="code-actions">
+        <button className="btn" onClick={copy}>{copied ? 'Скопировано' : 'Копировать код'}</button>
+      </div>
+      <pre className="code"><code>{fairSource}</code></pre>
+    </section>
+  )
+}
+
 export default function Fair() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -127,6 +169,8 @@ export default function Fair() {
           Сеть drand: quicknet, chain hash <code>{short(DRAND.chainHash)}</code>. Исходный код алгоритма — файл <code>shared/fair.js</code>.
         </p>
       </section>
+
+      <SourceCode />
 
       <section className="panel">
         <h2>Текущий список билетов</h2>

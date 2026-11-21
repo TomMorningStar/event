@@ -4,7 +4,7 @@ async function request(url, options = {}) {
   try {
     data = await res.json()
   } catch {
-    /* пустой ответ */
+    data = null
   }
   if (!res.ok) {
     const err = new Error(data?.error || `Ошибка ${res.status}`)
@@ -34,7 +34,7 @@ export const api = {
   deletePrize: (id) => request(`/api/admin/prizes/${id}`, json('DELETE')),
   draw: (id) => request(`/api/admin/prizes/${id}/draw`, json('POST')),
   removeWinner: (id, reason) => request(`/api/admin/prizes/${id}/winner`, json('DELETE', { reason })),
-  clients: (q, page) => request(`/api/admin/clients?${new URLSearchParams({ q, page })}`),
+  clients: (params) => request(`/api/admin/clients?${new URLSearchParams(params)}`),
   draws: () => request('/api/public/draws'),
   listText: async (hash) => {
     const r = await fetch(`/api/public/lists/${hash}.txt`)

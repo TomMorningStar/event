@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
-import { canonicalList, listText, listHash, buildPool, roundAt, roundTime, pickIndex, verifyBeacon, beaconUrl, DRAND } from '../shared/fair.js'
+import { canonicalList, listText, listHash, buildPool, roundAt, roundTime, chooseWinner, verifyBeacon, beaconUrl, DRAND } from '../shared/fair.js'
 
 const DIR = path.resolve('data')
 const LISTS_DIR = path.join(DIR, 'lists')
@@ -25,16 +25,15 @@ function writeJson(file, data) {
 }
 const fail = (message, status) => Object.assign(new Error(message), { status })
 
-// { tickets: [[ticket,name,phone]], listHash, stats, fileName, uploadedAt }
 let ticketsDb = readJson(TICKETS_FILE, { tickets: [], listHash: null, stats: null, fileName: null, uploadedAt: null })
-// { prizes: [{id,title}], draws: [...] }
+
 let state = readJson(STATE_FILE, { prizes: [], draws: [] })
 state.draws ??= []
 delete state.winners
 
 const saveState = () => writeJson(STATE_FILE, state)
 
-let byTicket = null // Map ticket -> [ticket,name,phone]
+let byTicket = null
 let sortedCache = null
 function index() {
   if (!byTicket) {
@@ -76,7 +75,7 @@ export function addPrize(title) {
 
 export function deletePrize(id) {
   if (state.draws.some((d) => d.prizeId === id && d.status === 'pending')) throw fail('Идёт розыгрыш этого приза', 409)
-  // записи розыгрышей остаются в публичном журнале
+
   state.prizes = state.prizes.filter((p) => p.id !== id)
   state.draws.forEach((d) => {
     if (d.prizeId === id && d.status === 'done') {
@@ -99,7 +98,6 @@ export function cancelWinner(prizeId, reason) {
 
 export const activeDraw = (prizeId) => state.draws.find((d) => d.prizeId === prizeId && d.status !== 'cancelled')
 
-/** Шаг 1: фиксация обязательства (пул + будущий раунд drand) */
 export function startDraw(prizeId, allowMultiple) {
   const prize = state.prizes.find((p) => p.id === prizeId)
   if (!prize) throw fail('Приз не найден', 404)
@@ -156,7 +154,6 @@ async function fetchBeacon(round) {
   throw lastErr
 }
 
-/** Шаг 2: раунд вышел — берём случайность drand и вычисляем победителя */
 async function finalize(drawId) {
   const draw = state.draws.find((d) => d.id === drawId)
   if (!draw || draw.status !== 'pending') return
@@ -171,8 +168,8 @@ async function finalize(drawId) {
   const { sorted, byTicket } = index()
   const pool = buildPool(sorted, draw.excluded)
   if (listHash(pool) !== draw.poolHash) throw new Error('Пул изменился — такого быть не должно')
-  const { index: idx, seed } = pickIndex(beacon.randomness, draw.poolHash, draw.drawNo, pool.length)
-  const t = byTicket.get(pool[idx])
+  const { index: idx, seed, ticket } = chooseWinner(pool, draw.poolHash, draw.drawNo, beacon.randomness)
+  const t = byTicket.get(ticket)
   Object.assign(draw, {
     status: 'done',
     randomness: beacon.randomness,
@@ -193,10 +190,8 @@ function scheduleFinalize(draw) {
   setTimeout(() => finalize(draw.id), wait)
 }
 
-// после перезапуска сервера довести незавершённые розыгрыши
 state.draws.filter((d) => d.status === 'pending').forEach(scheduleFinalize)
 
-// ---------- клиенты ----------
 let clientsCache = null
 function clients() {
   if (!clientsCache) {
@@ -207,24 +202,35 @@ function clients() {
       c.tickets.push(ticket)
     }
     clientsCache = [...map.values()]
-      .map((c) => ({ ...c, tickets: c.tickets.sort(), search: `${c.name} ${c.phone} ${c.phone.replace(/\D/g, '')}`.toLowerCase() }))
+      .map((c) => ({ ...c, tickets: c.tickets.sort(), search: normalize(`${c.name} ${c.phone} ${c.phone.replace(/\D/g, '')} ${c.tickets.join(' ')}`) }))
       .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
   }
   return clientsCache
 }
 
-export function searchClients(q, page, size = 50) {
+const normalize = (v) => String(v || '').toLowerCase().replace(/ё/g, 'е').replace(/\s+/g, ' ').trim()
+
+const SORTS = {
+  count_desc: (a, b) => b.tickets.length - a.tickets.length || a.name.localeCompare(b.name, 'ru'),
+  count_asc: (a, b) => a.tickets.length - b.tickets.length || a.name.localeCompare(b.name, 'ru'),
+  name_asc: (a, b) => a.name.localeCompare(b.name, 'ru'),
+  name_desc: (a, b) => b.name.localeCompare(a.name, 'ru'),
+}
+
+export function searchClients({ q, page = 1, size = 50, sort = 'count_desc', min = 0, max = 0, winners = false }) {
   const all = clients()
-  const query = String(q || '').trim().toLowerCase()
-  const digits = query.replace(/\D/g, '')
-  const found = !query
-    ? all
-    : all.filter((c) => c.search.includes(query) || (digits.length >= 3 && (c.search.includes(digits) || c.tickets.some((t) => t.includes(digits)))))
+  const tokens = normalize(q).split(' ').filter(Boolean)
   const wonPhones = new Set(state.draws.filter((d) => d.status === 'done').map((d) => d.phone))
+  const found = all
+    .filter((c) => tokens.every((t) => c.search.includes(t)))
+    .filter((c) => c.tickets.length >= min && (!max || c.tickets.length <= max))
+    .filter((c) => !winners || wonPhones.has(c.phone))
+    .sort(SORTS[sort] || SORTS.count_desc)
   const start = (page - 1) * size
   return {
     total: found.length,
     totalClients: all.length,
+    totalTickets: found.reduce((n, c) => n + c.tickets.length, 0),
     page,
     pages: Math.max(1, Math.ceil(found.length / size)),
     items: found.slice(start, start + size).map(({ search, ...c }) => ({ ...c, count: c.tickets.length, winner: wonPhones.has(c.phone) })),

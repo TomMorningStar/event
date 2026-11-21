@@ -1,10 +1,5 @@
 #!/usr/bin/env node
-/**
- * Независимая проверка всех розыгрышей.
- *   node scripts/verify.mjs https://ваш-сайт
- * Скачивает журнал и списки, проверяет хэши, BLS-подпись drand
- * (и сверяет число с api.drand.sh), пересчитывает победителя.
- */
+
 import { verifyDraw, beaconUrl } from '../shared/fair.js'
 
 const base = (process.argv[2] || 'http://localhost:3001').replace(/\/$/, '')
