@@ -1,0 +1,24 @@
+# зависимости и сборка
+node_modules/
+dist/
+
+# секреты и локальные настройки (пароль админа, JWT_SECRET)
+.env
+.env.*
+!.env.example
+
+# рабочие данные розыгрыша: персональные данные покупателей, телефоны, победители
+data/
+*.xlsx
+*.xls
+*.csv
+
+# логи, временные и системные файлы
+*.log
+npm-debug.log*
+*.tmp
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
