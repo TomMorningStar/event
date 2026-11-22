@@ -1,0 +1,384 @@
+/* Публичная страница розыгрыша в фирменном стиле ВКУСДОМ.
+   Все правила внутри .vd, чтобы не задевать админку и общие стили. */
+@import './brand.css';
+
+.vd {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--vd-green);
+  color: var(--vd-white);
+  font-family: var(--vd-font);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+.vd--center { display: grid; place-items: center; }
+.vd-loading {
+  position: relative; z-index: 1; display: grid; justify-items: center; gap: 18px;
+  color: var(--vd-text-muted); font-size: 1.05rem;
+}
+.vd-loading img { width: 64px; animation: vd-breathe 1.8s ease-in-out infinite; }
+
+/* ---------- фон ---------- */
+.vd-backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.vd-backdrop-tile { position: absolute; inset: 0; color: rgba(255, 255, 255, 0.045); }
+.vd-backdrop-sign {
+  position: absolute; top: 50%; right: -22vmax; height: 118vmax; max-height: 1500px;
+  transform: translateY(-50%);
+}
+.vd-bs-outline { fill: var(--vd-green-3); opacity: 0.55; }
+.vd-bs-leaf { fill: var(--vd-green); opacity: 0.85; }
+.vd-backdrop-leaf {
+  position: absolute; left: -8vmax; bottom: -9vmax; width: 21vmax;
+  fill: var(--vd-lime); opacity: 0.9;
+}
+.vd-backdrop::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(1100px 700px at 30% 40%, transparent 0%, rgba(6, 36, 22, 0.5) 100%);
+}
+
+/* ---------- каркас ---------- */
+.vd-page {
+  position: relative; z-index: 1;
+  max-width: 1360px; margin: 0 auto;
+  padding: 0 max(clamp(16px, 3vw, 40px), env(safe-area-inset-right)) 48px max(clamp(16px, 3vw, 40px), env(safe-area-inset-left));
+}
+.vd-top {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: clamp(18px, 2.6vw, 32px) 0;
+}
+.vd-logo { height: clamp(36px, 3.6vw, 54px); width: auto; display: block; }
+.vd-logo-link { display: block; border-radius: 8px; }
+.vd-logo-link:focus-visible { outline: 2px solid var(--vd-lime); outline-offset: 6px; }
+
+/* спокойный фон для страниц с текстом */
+.vd--quiet .vd-bs-outline { opacity: 0.32; }
+.vd--quiet .vd-backdrop-leaf { opacity: 0.55; width: 16vmax; }
+
+/* кнопки */
+.vd-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 10px 18px; border-radius: 999px;
+  font: 500 0.95rem/1.1 var(--vd-font); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.vd-btn .vd-icon { width: 18px; height: 18px; }
+.vd-btn:disabled { opacity: 0.55; cursor: progress; }
+.vd-btn:focus-visible { outline: 2px solid var(--vd-lime); outline-offset: 3px; }
+.vd-btn--primary { background: var(--vd-lime); color: var(--vd-ink); border: 1px solid var(--vd-lime); }
+.vd-btn--primary:hover:not(:disabled) { background: #d6e21a; }
+.vd-btn--ghost { background: rgba(10, 59, 36, 0.55); color: var(--vd-white); border: 1px solid var(--vd-line); }
+.vd-btn--ghost:hover:not(:disabled) { border-color: rgba(199, 211, 1, 0.6); color: var(--vd-lime); }
+.vd-icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.vd-status {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 9px 16px; border-radius: 999px;
+  border: 1px solid var(--vd-line); background: rgba(10, 59, 36, 0.55);
+  font-size: clamp(0.72rem, 0.9vw, 0.85rem); font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--vd-text-muted); white-space: nowrap;
+}
+.vd-status--live { color: var(--vd-white); border-color: rgba(199, 211, 1, 0.45); }
+
+.vd-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--vd-lime); flex: none; display: inline-block; }
+.vd-dot--pulse { animation: vd-pulse 1.4s ease-in-out infinite; }
+
+.vd-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--vd-lime); font-weight: 500; text-transform: uppercase;
+  font-size: clamp(0.78rem, 1vw, 0.95rem); letter-spacing: 0.2em;
+  margin-bottom: clamp(14px, 1.6vw, 22px);
+}
+.vd-eyebrow--center { justify-content: center; }
+
+/* ---------- сцена ---------- */
+.vd-stage {
+  position: relative; overflow: hidden;
+  display: grid; place-items: center;
+  min-height: clamp(420px, 58vh, 680px);
+  padding: clamp(28px, 4.5vw, 72px);
+  border-radius: clamp(24px, 2.6vw, 36px);
+  background:
+    radial-gradient(900px 500px at 80% 0%, rgba(27, 102, 68, 0.55), transparent 70%),
+    linear-gradient(160deg, rgba(18, 74, 49, 0.92), rgba(10, 59, 36, 0.94));
+  border: 1px solid rgba(199, 211, 1, 0.16);
+  box-shadow: 0 30px 80px rgba(3, 22, 13, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.vd-stage > * { width: 100%; }
+
+/* ожидание: заголовок + билеты участников */
+.vd-idle {
+  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  align-items: center; gap: clamp(28px, 4vw, 72px);
+}
+.vd-title {
+  margin: 0; font-weight: 700; line-height: 0.95; letter-spacing: -0.025em;
+  font-size: clamp(3rem, 7vw, 7.2rem);
+}
+.vd-title span { color: var(--vd-lime); }
+.vd-lead {
+  margin: clamp(16px, 2vw, 28px) 0 0; max-width: 30ch;
+  color: var(--vd-text-muted); font-weight: 300; line-height: 1.45;
+  font-size: clamp(1.05rem, 1.5vw, 1.45rem);
+}
+.vd-stats { display: flex; align-items: stretch; gap: clamp(18px, 2.4vw, 36px); margin-top: clamp(24px, 3.4vw, 48px); }
+.vd-stats > div:not(.vd-stats-sep) { display: grid; gap: 6px; }
+.vd-stats b { font-weight: 700; font-size: clamp(2rem, 3.6vw, 3.6rem); line-height: 1; letter-spacing: -0.02em; }
+.vd-stats span { color: var(--vd-text-muted); font-size: clamp(0.85rem, 1vw, 1rem); }
+.vd-stats-sep { width: 1px; background: var(--vd-line); }
+
+/* билет участника */
+.vd-ticket-stack { position: relative; width: min(460px, 100%); justify-self: center; perspective: 1200px; }
+.vd-ticket, .vd-ticket-back { border-radius: 26px; }
+.vd-ticket-back { position: absolute; inset: 0; }
+.vd-ticket-back--lime { background: var(--vd-lime); transform: rotate(-8deg) translate(-14px, 10px); }
+.vd-ticket-back--glass {
+  background: rgba(27, 102, 68, 0.55); border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: rotate(5deg) translate(16px, -6px);
+}
+.vd-ticket {
+  --stub: 118px;
+  position: relative; display: grid; grid-template-rows: auto 1fr var(--stub);
+  min-height: 330px; padding: 26px 30px 0;
+  background: linear-gradient(150deg, var(--vd-green-4), var(--vd-green-3) 55%, var(--vd-green-2));
+  border: 2px solid rgba(199, 211, 1, 0.85);
+  box-shadow: 0 24px 60px rgba(3, 22, 13, 0.5);
+  -webkit-mask:
+    radial-gradient(circle 16px at 0 calc(100% - var(--stub)), #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 16px at 100% calc(100% - var(--stub)), #0000 97%, #000) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle 16px at 0 calc(100% - var(--stub)), #0000 97%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 16px at 100% calc(100% - var(--stub)), #0000 97%, #000) right / 51% 100% no-repeat;
+  animation: vd-deal 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.vd-ticket::after {
+  content: ''; position: absolute; left: 26px; right: 26px; bottom: var(--stub);
+  border-top: 2px dashed rgba(199, 211, 1, 0.45);
+}
+.vd-ticket-top {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--vd-lime); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.18em; text-transform: uppercase;
+}
+.vd-ticket-top img { width: 34px; height: auto; }
+.vd-ticket-no {
+  align-self: center; font-weight: 700; letter-spacing: 0.02em; white-space: nowrap;
+  font-size: clamp(1.7rem, 4.4vw, 3.8rem); font-variant-numeric: tabular-nums;
+}
+@media (max-width: 900px) {
+  .vd-ticket-no { font-size: clamp(1.7rem, 9.4vw, 3.4rem); }
+}
+.vd-ticket-no--empty { color: rgba(255, 255, 255, 0.35); }
+.vd-ticket-person { align-self: center; min-width: 0; }
+.vd-ticket-name {
+  font-weight: 500; font-size: clamp(1.1rem, 1.5vw, 1.35rem); line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere;
+}
+.vd-ticket-phone { margin-top: 6px; color: var(--vd-text-muted); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; }
+.is-noname { opacity: 0.6; font-weight: 300; }
+
+/* общие заголовки сцен */
+.vd-scene, .vd-roll { text-align: center; position: relative; }
+.vd-scene-title {
+  margin: 0 auto clamp(22px, 3vw, 40px); max-width: 22ch;
+  font-weight: 700; line-height: 1.02; letter-spacing: -0.02em;
+  font-size: clamp(2rem, 4.6vw, 4.6rem); overflow-wrap: anywhere;
+}
+.vd-scene-title span { color: var(--vd-lime); }
+
+/* розыгрыш: барабаны с цифрами на билете */
+.vd .vd-win-ticket {
+  --pad: clamp(18px, 2.4vw, 34px);
+  position: relative; display: inline-block; max-width: 100%;
+  padding: var(--pad) clamp(18px, 3vw, 44px);
+  border-radius: 28px;
+  background: rgba(6, 40, 24, 0.55);
+  border: 1px solid rgba(199, 211, 1, 0.35);
+  transition: background 0.7s ease, border-color 0.7s ease, box-shadow 0.7s ease, color 0.7s ease;
+}
+.vd-win-top {
+  display: flex; justify-content: space-between; gap: 24px;
+  margin-bottom: clamp(14px, 1.6vw, 22px);
+  font-weight: 500; font-size: clamp(0.72rem, 0.9vw, 0.88rem); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--vd-lime); transition: color 0.7s ease;
+}
+.vd-win-prize { color: var(--vd-text-muted); max-width: 28ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 0.7s ease; }
+.vd .reels { gap: clamp(4px, 0.6vw, 10px); font-size: clamp(2.6rem, 8.6vw, 7rem); font-weight: 700; }
+.vd .reel {
+  width: 0.74em; border-radius: clamp(8px, 1vw, 16px);
+  background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(27, 102, 68, 0.5) 50%, rgba(0, 0, 0, 0.35));
+  border: 1px solid rgba(199, 211, 1, 0.28); box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.45);
+  transition: background 0.7s ease, border-color 0.7s ease, box-shadow 0.7s ease;
+}
+.vd .reel::after { background: linear-gradient(rgba(6, 36, 22, 0.7), transparent 32%, transparent 68%, rgba(6, 36, 22, 0.7)); transition: opacity 0.7s ease; }
+.vd .reel-cell { color: var(--vd-white); text-shadow: 0 0 22px rgba(199, 211, 1, 0.35); transition: color 0.7s ease, text-shadow 0.7s ease; }
+.vd .roll-person {
+  position: relative; margin-top: clamp(18px, 2vw, 28px); padding-top: clamp(16px, 1.8vw, 24px); min-height: 88px;
+}
+.vd .roll-person::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  border-top: 2px dashed rgba(199, 211, 1, 0.35); transition: border-color 0.7s ease;
+}
+.vd .roll-person.blurred > * { filter: blur(7px); opacity: 0.55; }
+.vd .roll-person.blurred { filter: none; opacity: 1; }
+.vd .roll-name { font-weight: 700; font-size: clamp(1.4rem, 2.6vw, 2.4rem); line-height: 1.15; }
+.vd .roll-phone { color: var(--vd-text-muted); font-size: clamp(1rem, 1.4vw, 1.3rem); letter-spacing: 0.1em; margin-top: 6px; }
+
+/* момент победы: билет становится светлым */
+.vd .roll.revealed .vd-win-ticket {
+  background: var(--vd-cream); border-color: var(--vd-cream); color: var(--vd-ink);
+  box-shadow: 0 30px 90px rgba(3, 22, 13, 0.55), 0 0 0 8px rgba(199, 211, 1, 0.22);
+  animation: vd-win 0.7s cubic-bezier(0.2, 1.3, 0.3, 1);
+}
+.vd .roll.revealed .vd-win-top, .vd .roll.revealed .vd-win-prize { color: var(--vd-ink-muted); }
+.vd .roll.revealed .reel { background: #fff; border-color: rgba(10, 59, 36, 0.14); box-shadow: inset 0 0 0 1px rgba(10, 59, 36, 0.04); }
+.vd .roll.revealed .reel::after { opacity: 0; }
+.vd .roll.revealed .reel-cell { color: var(--vd-ink); text-shadow: none; }
+.vd .roll.revealed .roll-person::before { border-color: rgba(10, 59, 36, 0.25); }
+.vd .roll.revealed .roll-phone { color: var(--vd-ink-muted); }
+.vd .roll.revealed .roll-name { animation: pop 0.6s cubic-bezier(0.2, 1.4, 0.3, 1); }
+
+.vd .confetti i { width: 10px; height: 16px; border-radius: 2px; }
+.vd .confetti i.is-round { width: 11px; height: 11px; border-radius: 50%; }
+
+/* ожидание числа drand */
+.vd-pending-spin {
+  font-weight: 700; font-size: clamp(2.6rem, 8vw, 6.4rem); letter-spacing: 0.06em; line-height: 1;
+  font-variant-numeric: tabular-nums; color: var(--vd-white); opacity: 0.75; filter: blur(4px);
+}
+.vd-countdown {
+  display: inline-flex; align-items: center; gap: clamp(14px, 1.6vw, 22px); text-align: left;
+  margin-top: clamp(26px, 3.4vw, 46px); padding: 14px 26px 14px 14px;
+  border-radius: 999px; background: rgba(6, 40, 24, 0.55); border: 1px solid rgba(199, 211, 1, 0.3);
+}
+.vd-countdown-num {
+  display: grid; place-items: center; flex: none;
+  width: clamp(64px, 6vw, 88px); aspect-ratio: 1; border-radius: 50%;
+  background: var(--vd-lime); color: var(--vd-ink);
+  font-weight: 700; font-size: clamp(1.8rem, 2.8vw, 2.6rem); font-variant-numeric: tabular-nums;
+}
+.vd-countdown-num--wait {
+  background: transparent; border: 4px solid rgba(199, 211, 1, 0.25); border-top-color: var(--vd-lime);
+  animation: vd-spin 0.9s linear infinite;
+}
+.vd-countdown-text { font-weight: 500; font-size: clamp(1rem, 1.5vw, 1.35rem); line-height: 1.3; }
+.vd-countdown-text span { display: block; color: var(--vd-text-muted); font-weight: 400; font-size: 0.85em; }
+.vd-pending-meta { margin-top: 18px; color: var(--vd-text-muted); font-size: 0.85rem; }
+.vd code {
+  font-family: ui-monospace, Consolas, monospace; font-size: 0.9em;
+  background: rgba(0, 0, 0, 0.25); padding: 2px 6px; border-radius: 6px;
+}
+
+/* ---------- лента номеров ---------- */
+.vd-marquee {
+  overflow: hidden; margin: clamp(22px, 3vw, 36px) 0 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.vd-marquee-track { display: flex; gap: 12px; width: max-content; animation: vd-scroll 70s linear infinite; }
+.vd-chip {
+  padding: 8px 16px; border-radius: 999px; white-space: nowrap;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid var(--vd-line);
+  color: rgba(255, 255, 255, 0.72); font-variant-numeric: tabular-nums; font-size: 0.95rem;
+}
+.vd-chip:nth-child(5n + 2) { color: var(--vd-lime); border-color: rgba(199, 211, 1, 0.3); }
+
+/* ---------- призы ---------- */
+.vd-prizes { margin-top: clamp(36px, 5vw, 64px); }
+.vd-section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: clamp(18px, 2.4vw, 28px); }
+.vd-section-head h2 { margin: 0; font-weight: 700; font-size: clamp(1.7rem, 2.8vw, 2.6rem); letter-spacing: -0.01em; }
+.vd-section-head h2::after { content: ''; display: block; width: 64px; height: 4px; margin-top: 12px; background: var(--vd-lime); border-radius: 2px; }
+.vd-section-head span { color: var(--vd-text-muted); font-size: 0.95rem; padding-bottom: 4px; }
+.vd-empty { color: var(--vd-text-muted); }
+.vd-prize-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: clamp(12px, 1.4vw, 18px); }
+.vd-prize {
+  display: flex; flex-direction: column; gap: 10px; min-height: 168px;
+  padding: clamp(18px, 1.8vw, 24px); border-radius: 22px;
+  background: rgba(18, 74, 49, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.5s ease, border-color 0.5s ease, color 0.5s ease;
+}
+.vd-prize-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vd-prize-no { color: var(--vd-lime); font-weight: 500; font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; }
+.vd-prize-title { font-weight: 500; font-size: clamp(1.1rem, 1.3vw, 1.3rem); line-height: 1.25; overflow-wrap: anywhere; }
+.vd-prize-wait { margin-top: auto; display: flex; align-items: center; gap: 8px; color: var(--vd-text-muted); font-size: 0.92rem; }
+.vd-prize.is-drawing { border-color: rgba(199, 211, 1, 0.5); }
+.vd-prize.is-drawing .vd-prize-wait { color: var(--vd-white); }
+.vd-prize.is-won {
+  background: var(--vd-cream); border-color: var(--vd-cream); color: var(--vd-ink);
+  animation: pop 0.6s cubic-bezier(0.2, 1.4, 0.3, 1);
+}
+.vd-prize.is-won .vd-prize-no { color: var(--vd-leaf); }
+.vd-badge {
+  padding: 4px 10px; border-radius: 999px; background: var(--vd-lime); color: var(--vd-ink);
+  font-weight: 500; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.vd-prize-winner { margin-top: auto; padding-top: 12px; border-top: 2px dashed rgba(10, 59, 36, 0.18); }
+.vd-pw-ticket { font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; }
+.vd-pw-name { margin-top: 4px; font-weight: 500; overflow-wrap: anywhere; }
+.vd-pw-phone { color: var(--vd-ink-muted); letter-spacing: 0.06em; font-size: 0.92rem; margin-top: 2px; }
+
+/* ---------- подвал ---------- */
+.vd-footer {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: clamp(36px, 5vw, 56px); padding-top: 24px; border-top: 1px solid var(--vd-line);
+  color: var(--vd-text-muted); font-size: 0.92rem; text-align: left;
+}
+.vd-footer p { margin: 0; max-width: 72ch; }
+.vd-footer a { color: var(--vd-lime); text-decoration: none; font-weight: 500; white-space: nowrap; }
+.vd-footer a:hover { text-decoration: underline; }
+.vd-footer-icon { width: 26px; height: 26px; flex: none; fill: none; stroke: var(--vd-lime); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- анимации ---------- */
+@keyframes vd-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(199, 211, 1, 0.6); } 50% { box-shadow: 0 0 0 7px rgba(199, 211, 1, 0); } }
+@keyframes vd-breathe { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.92); opacity: 0.7; } }
+@keyframes vd-spin { to { transform: rotate(360deg); } }
+@keyframes vd-scroll { to { transform: translateX(-50%); } }
+@keyframes vd-deal {
+  from { opacity: 0; transform: rotateY(-35deg) translateX(40px) scale(0.94); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes vd-win { from { transform: scale(0.94); } to { transform: none; } }
+
+/* ---------- адаптивность ---------- */
+/* телевизор / большой экран: крупнее главное — номер и имя */
+@media (min-width: 1700px) {
+  .vd-page { max-width: 1560px; }
+  .vd .reels { font-size: clamp(7rem, 5.6vw, 9.5rem); }
+  .vd .roll-name { font-size: clamp(2.4rem, 1.8vw, 3.2rem); }
+  .vd-countdown-text { font-size: 1.6rem; }
+}
+@media (max-width: 900px) {
+  .vd-idle { grid-template-columns: minmax(0, 1fr); }
+  .vd-ticket-stack { order: -1; width: min(400px, 88%); }
+  .vd-hero { text-align: center; }
+  .vd-hero .vd-eyebrow { justify-content: center; }
+  .vd-lead { margin-left: auto; margin-right: auto; }
+  .vd-stats { justify-content: center; }
+  .vd-stage { min-height: 0; }
+}
+@media (max-width: 640px) {
+  .vd-top { flex-wrap: wrap; }
+  .vd-status { padding: 7px 12px; letter-spacing: 0.1em; }
+  .vd-stage { padding: 26px 16px 30px; }
+  .vd-eyebrow { letter-spacing: 0.1em; font-size: 0.74rem; gap: 8px; }
+  .vd-ticket { --stub: 100px; min-height: 270px; padding: 20px 22px 0; }
+  .vd-ticket-back--lime { transform: rotate(-7deg) translate(-8px, 8px); }
+  .vd-ticket-back--glass { transform: rotate(5deg) translate(10px, -4px); }
+  .vd-win-top { flex-direction: column; gap: 4px; align-items: center; }
+  .vd .reels { font-size: clamp(1.9rem, 10vw, 3rem); }
+  .vd .vd-win-ticket { padding-left: 14px; padding-right: 14px; }
+  .vd-countdown { flex-direction: column; text-align: center; border-radius: 24px; padding: 16px 20px; }
+  .vd-prize-grid { grid-template-columns: 1fr; }
+  .vd-section-head { flex-direction: column; align-items: flex-start; }
+  .vd-footer { flex-direction: column; text-align: center; }
+  .vd-prize { min-height: 0; }
+  .vd-prize-wait { margin-top: 6px; }
+  .vd-backdrop-leaf { width: 26vmax; left: -12vmax; bottom: -10vmax; opacity: 0.75; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  .vd-stage { min-height: 0; }
+  .vd-title { font-size: 2.6rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vd *, .vd *::before, .vd *::after { animation: none !important; }
+  .vd .vd-win-ticket, .vd .reel, .vd .reel-cell { transition: none; }
+}

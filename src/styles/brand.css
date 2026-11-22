@@ -1,0 +1,51 @@
+/* Фирменный стиль ВКУСДОМ: шрифт Stolzl и цвета из брендбука */
+
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl_light.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl_regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl_medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Stolzl';
+  src: url('../assets/fonts/stolzl_bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* основные цвета брендбука */
+  --vd-green: #0a3b24;
+  --vd-lime: #c7d301;
+  --vd-white: #ffffff;
+  /* дополнительные тона брендбука */
+  --vd-green-2: #124a31;
+  --vd-green-3: #115a37;
+  --vd-green-4: #1b6644;
+  /* цвет листьев в знаке */
+  --vd-leaf: #005a35;
+
+  /* производные для интерфейса */
+  --vd-cream: #f7f9ec;
+  --vd-ink: #0a3b24;
+  --vd-ink-muted: rgba(10, 59, 36, 0.62);
+  --vd-text-muted: rgba(255, 255, 255, 0.68);
+  --vd-line: rgba(255, 255, 255, 0.12);
+  --vd-font: 'Stolzl', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}

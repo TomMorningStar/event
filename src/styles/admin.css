@@ -1,0 +1,145 @@
+/* Админка в фирменном стиле ВКУСДОМ.
+   Каркас, фон, кнопки — public.css; поля и уведомления — forms.css. */
+
+/* навигация */
+.va-nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.va-nav-link {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 8px 14px;
+  border-radius: 999px; border: 1px solid transparent; background: none;
+  color: var(--vd-text-muted); font: 500 0.92rem/1 var(--vd-font); text-decoration: none; cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.va-nav-link .vd-icon { width: 16px; height: 16px; }
+.va-nav-link:hover { color: var(--vd-white); background: rgba(255, 255, 255, 0.06); }
+.va-nav-link.is-active { color: var(--vd-ink); background: var(--vd-lime); }
+.va-nav-link:focus-visible { outline: 2px solid var(--vd-lime); outline-offset: 2px; }
+.va-nav-logout { border-color: var(--vd-line); margin-left: 6px; }
+
+/* шапка страницы */
+.va-hero { padding: clamp(8px, 2vw, 24px) 0 clamp(4px, 1vw, 12px); }
+.va-title { margin: 0; font-weight: 700; line-height: 1; letter-spacing: -0.02em; font-size: clamp(2.2rem, 4.6vw, 3.8rem); }
+.va-title span { color: var(--vd-lime); }
+.va .vd-alert { margin-top: 20px; }
+
+/* разделы с номером */
+.va-section { margin-top: clamp(28px, 4vw, 48px); }
+.va-section-head { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.va-section-no {
+  display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 14px;
+  background: var(--vd-lime); color: var(--vd-ink); font-weight: 700; font-size: 1.05rem;
+}
+.va-section-head h2 { margin: 0; font-weight: 700; font-size: clamp(1.4rem, 2.2vw, 1.9rem); letter-spacing: -0.01em; }
+.va-panel {
+  padding: clamp(18px, 2.2vw, 28px); border-radius: 24px;
+  background: rgba(18, 74, 49, 0.82); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.va-help { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; flex-wrap: wrap; margin-bottom: 16px; }
+.va-help p { margin: 0; color: var(--vd-text-muted); font-size: 0.92rem; line-height: 1.5; }
+.va-help b { color: var(--vd-white); font-weight: 500; }
+
+/* загрузка файла */
+.va-drop {
+  display: grid; justify-items: center; gap: 10px; padding: clamp(22px, 3vw, 36px) 16px; text-align: center;
+  border: 2px dashed rgba(199, 211, 1, 0.45); border-radius: 20px; background: rgba(6, 40, 24, 0.45);
+  color: var(--vd-text-muted); cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.va-drop:hover { border-color: var(--vd-lime); background: rgba(199, 211, 1, 0.07); color: var(--vd-white); }
+.va-drop:focus-within { outline: 2px solid var(--vd-lime); outline-offset: 3px; }
+.va-drop-icon {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(199, 211, 1, 0.14); color: var(--vd-lime);
+}
+.va-drop-icon .vd-icon { width: 24px; height: 24px; }
+.va-drop b { color: var(--vd-white); font-weight: 500; font-size: 1.02rem; }
+.va-drop small { font-size: 0.85rem; }
+.va-drop.is-busy { border-style: solid; }
+.va-drop.is-busy .va-drop-icon { animation: vd-breathe 1.4s ease-in-out infinite; }
+
+/* статистика списка */
+.va-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 16px; }
+.va-stat { display: grid; gap: 6px; padding: 14px 16px; border-radius: 16px; background: rgba(6, 40, 24, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); }
+.va-stat b { font-weight: 700; font-size: clamp(1.4rem, 2vw, 1.8rem); line-height: 1; }
+.va-stat span { color: var(--vd-text-muted); font-size: 0.8rem; line-height: 1.3; }
+.va-stat.is-main b { color: var(--vd-lime); }
+.va-stat.is-warn b { color: #ffc46b; }
+.va-stat.is-warn.is-zero b { color: var(--vd-white); opacity: 0.55; }
+.va-file { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 16px; margin-top: 14px; font-size: 0.85rem; align-items: baseline; }
+.va-file dt { color: var(--vd-text-muted); }
+.va-file dd { margin: 0; overflow-wrap: anywhere; }
+.va-file code { word-break: break-all; }
+.va-empty { margin: 14px 0 0; color: var(--vd-text-muted); }
+
+/* добавление приза */
+.va-add { display: flex; gap: 10px; margin-bottom: 16px; }
+.va-add .vd-input { flex: 1; }
+.va-add .vd-btn { min-height: 50px; padding: 0 22px; }
+
+.va-count { margin: 0 0 12px; color: var(--vd-text-muted); font-size: 0.9rem; }
+
+/* призы */
+.va-prizes { display: grid; gap: 12px; }
+.va-prize {
+  display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 16px 24px; align-items: start;
+  padding: clamp(16px, 2vw, 22px); border-radius: 20px;
+  background: rgba(6, 40, 24, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.va-prize.is-won { border-color: rgba(199, 211, 1, 0.4); }
+.va-prize.is-pending { border-color: rgba(199, 211, 1, 0.7); box-shadow: 0 0 0 4px rgba(199, 211, 1, 0.08); }
+.va-prize-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+.va-prize-no { color: var(--vd-lime); font-weight: 500; font-size: 0.76rem; letter-spacing: 0.16em; text-transform: uppercase; }
+.va-tag { padding: 3px 10px; border-radius: 999px; font-weight: 500; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.va-tag.is-won { background: var(--vd-lime); color: var(--vd-ink); }
+.va-tag.is-pending { border: 1px solid rgba(199, 211, 1, 0.6); color: var(--vd-lime); display: inline-flex; align-items: center; gap: 6px; }
+.va-tag.is-idle { border: 1px solid var(--vd-line); color: var(--vd-text-muted); }
+.va-prize-title { margin: 0; font-weight: 500; font-size: clamp(1.1rem, 1.5vw, 1.3rem); overflow-wrap: anywhere; }
+
+.va-winner {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px;
+  margin: 14px 0 0; padding: 14px 16px; border-radius: 16px; background: var(--vd-cream); color: var(--vd-ink);
+}
+.va-winner div { min-width: 0; }
+.va-winner dt { color: var(--vd-ink-muted); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
+.va-winner dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.va-winner .va-w-ticket dd { font-weight: 700; font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.va-winner .va-w-drand { grid-column: 1 / -1; }
+.va-winner .va-w-drand dd { font-weight: 400; font-size: 0.88rem; color: var(--vd-ink-muted); }
+
+.va-pending { margin-top: 12px; display: grid; gap: 8px; color: var(--vd-white); font-size: 0.95rem; }
+.va-pending-row { display: flex; align-items: center; gap: 10px; }
+.va-spinner { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 3px solid rgba(199, 211, 1, 0.25); border-top-color: var(--vd-lime); animation: vd-spin 0.9s linear infinite; }
+.va-pending small { color: var(--vd-text-muted); font-size: 0.82rem; }
+.va-pending code { word-break: break-all; }
+.va-pending .va-err { color: #ffb3b3; }
+.va-idle { margin: 10px 0 0; color: var(--vd-text-muted); font-size: 0.92rem; }
+
+.va-actions { display: flex; flex-direction: column; gap: 8px; min-width: 190px; }
+.va-actions .vd-btn { width: 100%; }
+.vd-btn--danger { background: transparent; color: #ff9b9b; border: 1px solid rgba(255, 107, 107, 0.35); }
+.vd-btn--danger:hover:not(:disabled) { background: rgba(255, 107, 107, 0.12); border-color: rgba(255, 107, 107, 0.7); color: #ffc2c2; }
+
+/* отменённые результаты */
+.va-history { margin-top: 16px; border-radius: 16px; background: rgba(6, 40, 24, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); }
+.va-history summary { cursor: pointer; padding: 14px 16px; color: var(--vd-text-muted); font-weight: 500; list-style-position: inside; }
+.va-history summary:hover { color: var(--vd-white); }
+.va-history ul { list-style: none; margin: 0; padding: 0 16px 14px; display: grid; gap: 8px; }
+.va-history li { font-size: 0.86rem; line-height: 1.45; color: var(--vd-text-muted); padding-top: 8px; border-top: 1px solid var(--vd-line); }
+.va-history li b { color: var(--vd-white); font-weight: 500; }
+
+@media (max-width: 1100px) {
+  .va-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .vd-top:has(.va-nav) { flex-direction: column; align-items: flex-start; }
+  .va-nav { justify-content: flex-start; }
+  .va-prize { grid-template-columns: 1fr; }
+  .va-actions { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+  .va-actions .vd-btn { flex: 1 1 160px; width: auto; }
+}
+@media (max-width: 560px) {
+  .va-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .va-add { flex-direction: column; }
+  .va-help .vd-btn { width: 100%; }
+  .va-file { grid-template-columns: 1fr; gap: 2px; }
+  .va-file dd { margin-bottom: 6px; }
+  .va-nav-link { padding: 8px 10px; font-size: 0.86rem; }
+}

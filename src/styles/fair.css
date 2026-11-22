@@ -1,0 +1,183 @@
+/* Страница «Проверка честности» в фирменном стиле ВКУСДОМ.
+   Каркас, фон, кнопки и заголовки разделов — в public.css. */
+
+.vf a { color: var(--vd-lime); }
+.vf b { font-weight: 700; color: var(--vd-white); }
+.vf-muted { color: var(--vd-text-muted); font-size: 0.92rem; line-height: 1.55; margin: 0; }
+.vf code { overflow-wrap: anywhere; }
+
+/* шапка страницы */
+.vf-hero { padding: clamp(12px, 3vw, 40px) 0 clamp(8px, 2vw, 24px); }
+.vf-title {
+  margin: 0; font-weight: 700; line-height: 0.98; letter-spacing: -0.025em;
+  font-size: clamp(2.6rem, 6vw, 5.6rem);
+}
+.vf-title span { color: var(--vd-lime); }
+.vf-hero .vd-lead { max-width: 46ch; }
+.vf-facts {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(10px, 1.4vw, 18px);
+  margin-top: clamp(24px, 3.4vw, 44px); max-width: 920px;
+}
+.vf-facts > div {
+  display: grid; gap: 6px; padding: clamp(16px, 1.8vw, 22px);
+  border-radius: 20px; background: rgba(18, 74, 49, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vf-facts b { font-size: clamp(1.7rem, 2.6vw, 2.4rem); line-height: 1; letter-spacing: -0.01em; }
+.vf-facts > div:last-child b { color: var(--vd-lime); }
+.vf-facts span { color: var(--vd-text-muted); font-size: 0.9rem; }
+
+/* разделы */
+.vf-section { margin-top: clamp(40px, 5.4vw, 72px); }
+.vf-panel {
+  padding: clamp(18px, 2.2vw, 30px); border-radius: 24px;
+  background: rgba(18, 74, 49, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* шаги «как выбирается победитель» — нумерация как в брендбуке */
+.vf-steps {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: clamp(12px, 1.4vw, 18px);
+}
+.vf-steps li {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: clamp(18px, 2vw, 26px); border-radius: 22px;
+  background: rgba(18, 74, 49, 0.78); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vf-step-no { font-weight: 700; font-size: clamp(2.4rem, 3.4vw, 3.2rem); line-height: 0.9; color: var(--vd-lime); letter-spacing: -0.02em; }
+.vf-steps p { margin: 0; color: rgba(255, 255, 255, 0.84); line-height: 1.55; font-size: 0.98rem; }
+.vf-note { margin-top: 16px; }
+
+/* текущий список */
+.vf-list { display: flex; align-items: center; gap: clamp(16px, 2.4vw, 32px); flex-wrap: wrap; }
+.vf-list-count { display: grid; gap: 2px; }
+.vf-list-count b { font-size: clamp(1.8rem, 2.8vw, 2.6rem); line-height: 1; }
+.vf-list-count span { color: var(--vd-text-muted); font-size: 0.9rem; }
+.vf-hash { flex: 1 1 280px; min-width: 0; display: grid; gap: 6px; }
+.vf-hash span { color: var(--vd-lime); font-size: 0.74rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+.vf-hash code { display: block; padding: 10px 12px; font-size: 0.82rem; line-height: 1.45; word-break: break-all; }
+
+/* журнал розыгрышей */
+.vf-draws { display: grid; gap: clamp(12px, 1.4vw, 18px); }
+.vf-draw {
+  padding: clamp(18px, 2.2vw, 28px); border-radius: 24px;
+  background: rgba(18, 74, 49, 0.82); border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.vf-draw.is-pending { border-color: rgba(199, 211, 1, 0.5); }
+.vf-draw.is-cancelled { background: rgba(10, 59, 36, 0.6); border-style: dashed; border-color: rgba(255, 255, 255, 0.18); }
+.vf-draw-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.vf-draw-title { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; min-width: 0; }
+.vf-draw-no { color: var(--vd-lime); font-weight: 700; font-size: 0.95rem; letter-spacing: 0.06em; }
+.vf-draw h3 { margin: 0; font-weight: 500; font-size: clamp(1.15rem, 1.6vw, 1.45rem); overflow-wrap: anywhere; }
+.vf-status {
+  display: inline-flex; align-items: center; gap: 8px; flex: none;
+  padding: 5px 12px; border-radius: 999px;
+  font-weight: 500; font-size: 0.74rem; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.vf-status.is-done { background: var(--vd-lime); color: var(--vd-ink); }
+.vf-status.is-pending { border: 1px solid rgba(199, 211, 1, 0.5); color: var(--vd-lime); }
+.vf-status.is-cancelled { border: 1px solid rgba(255, 255, 255, 0.25); color: var(--vd-text-muted); }
+.vf-cancel { margin: 10px 0 0; color: var(--vd-text-muted); font-size: 0.92rem; }
+.vf-draw.is-cancelled .vf-winner-ticket { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: rgba(255, 255, 255, 0.4); }
+
+.vf-winner {
+  display: flex; align-items: center; gap: clamp(14px, 2vw, 28px); flex-wrap: wrap;
+  margin-top: 16px; padding-top: 16px; border-top: 2px dashed rgba(199, 211, 1, 0.25);
+}
+.vf-winner-ticket { font-weight: 700; font-size: clamp(1.6rem, 2.6vw, 2.2rem); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; }
+.vf-winner-name { font-weight: 500; font-size: 1.05rem; overflow-wrap: anywhere; }
+.vf-winner-phone { color: var(--vd-text-muted); letter-spacing: 0.06em; font-size: 0.92rem; margin-top: 2px; }
+
+.vf-winner-label { color: var(--vd-text-muted); font-size: 0.78rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; }
+.vf-wait { margin-top: 14px; }
+
+.vf-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+
+/* четыре проверки результата */
+.vf-checks {
+  list-style: none; margin: 18px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px;
+}
+.vf-checks li {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 12px 14px; border-radius: 16px;
+  background: rgba(6, 40, 24, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.vf-checks b { display: block; font-weight: 500; font-size: 0.92rem; line-height: 1.3; }
+.vf-checks small { display: block; margin-top: 2px; color: var(--vd-text-muted); font-size: 0.8rem; line-height: 1.35; }
+.vf-check-mark {
+  flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+.vf-check-mark .vd-icon { width: 14px; height: 14px; stroke-width: 2.8; }
+.vf-checks li.is-ok { border-color: rgba(199, 211, 1, 0.45); }
+.vf-checks li.is-ok .vf-check-mark { background: var(--vd-lime); border-color: var(--vd-lime); color: var(--vd-ink); }
+.vf-checks li.is-bad { border-color: rgba(255, 107, 107, 0.55); background: rgba(255, 107, 107, 0.1); }
+.vf-checks li.is-bad .vf-check-mark { background: #ff6b6b; border-color: #ff6b6b; color: #fff; }
+.vf-checks li.is-bad small { color: #ffb3b3; }
+
+.vf-chain { margin-top: clamp(24px, 3vw, 36px); }
+.vf-chain .vf-verify-sum { margin-bottom: 0; }
+.vf-verify-all { margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: rgba(6, 40, 24, 0.55); }
+.vf-verify-all li.is-ok .vd-icon { color: var(--vd-lime); }
+
+.vf-trust { margin-top: clamp(12px, 1.4vw, 18px); }
+.vf-trust h3 { margin: 0 0 12px; font-weight: 700; font-size: clamp(1.1rem, 1.5vw, 1.3rem); }
+.vf-trust ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: rgba(255, 255, 255, 0.84); line-height: 1.55; font-size: 0.96rem; }
+.vf-trust li::marker { color: var(--vd-lime); }
+
+/* результат проверки */
+.vf-verify { margin-top: 16px; padding: 16px 18px; border-radius: 18px; }
+.vf-verify.is-ok { background: var(--vd-cream); color: var(--vd-ink); }
+.vf-verify.is-bad { background: rgba(255, 107, 107, 0.12); border: 1px solid rgba(255, 107, 107, 0.5); }
+.vf-verify-sum { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.1rem; margin-bottom: 10px; }
+.vf-verify-badge { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; }
+.vf-verify.is-ok .vf-verify-badge { background: var(--vd-lime); color: var(--vd-ink); }
+.vf-verify.is-bad .vf-verify-badge { background: #ff6b6b; color: #fff; }
+.vf-verify-badge .vd-icon { width: 18px; height: 18px; stroke-width: 2.4; }
+.vf-verify-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.vf-verify-steps li { display: flex; gap: 8px; align-items: flex-start; font-size: 0.9rem; line-height: 1.45; }
+.vf-verify-steps .vd-icon { width: 18px; height: 18px; margin-top: 1px; stroke-width: 2.2; }
+.vf-verify-steps li.is-ok .vd-icon { color: var(--vd-leaf); }
+.vf-verify-steps li.is-bad .vd-icon { color: #ff6b6b; }
+.vf-verify.is-ok code { background: rgba(10, 59, 36, 0.08); }
+
+/* технические данные */
+.vf-data {
+  display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr); gap: 10px 18px;
+  margin: 16px 0 0; padding: 16px 18px; border-radius: 18px; background: rgba(6, 40, 24, 0.55);
+  font-size: 0.88rem; line-height: 1.5;
+}
+.vf-data dt { color: var(--vd-text-muted); }
+.vf-data dd { margin: 0; overflow-wrap: anywhere; }
+
+/* исходный код */
+.vf-code-bar { display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap; margin: 18px 0 14px; }
+.vf-code {
+  margin: 0; max-height: 560px; overflow: auto; padding: 18px;
+  border-radius: 18px; background: #062818; border: 1px solid rgba(255, 255, 255, 0.08);
+  font: 0.82rem/1.55 ui-monospace, Consolas, monospace; color: rgba(255, 255, 255, 0.86);
+}
+.vf-code code { background: none; padding: 0; white-space: pre; overflow-wrap: normal; font-size: inherit; }
+
+@media (max-width: 1180px) {
+  .vf-steps { grid-template-columns: 1fr; gap: 10px; }
+  .vf-steps li { flex-direction: row; align-items: flex-start; gap: clamp(14px, 2.4vw, 26px); }
+  .vf-step-no { min-width: 2.2ch; font-size: clamp(2rem, 4vw, 2.8rem); }
+}
+@media (max-width: 1000px) {
+  .vf-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  .vf-checks { grid-template-columns: 1fr; }
+  .vf-facts { grid-template-columns: 1fr; }
+  .vf-facts > div { grid-template-columns: auto 1fr; align-items: baseline; gap: 12px; }
+}
+@media (max-width: 640px) {
+  .vf-draw-head { flex-direction: column; }
+  .vf-actions .vd-btn { flex: 1 1 100%; }
+  .vf-data { grid-template-columns: 1fr; gap: 2px; }
+  .vf-data dd { margin-bottom: 8px; }
+  .vf-list .vd-btn { width: 100%; }
+  .vf-code-bar .vd-btn { width: 100%; }
+}
