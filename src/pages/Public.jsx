@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import TicketRoll from '../components/TicketRoll.jsx'
 import Backdrop from '../components/brand/Backdrop.jsx'
 import TopBar from '../components/brand/TopBar.jsx'
-import { IconShield } from '../components/brand/icons.jsx'
 import { PersonName, plural } from '../components/brand/text.jsx'
 import signUrl from '../assets/brand/sign.svg'
 import '../styles/public.css'
@@ -49,7 +47,7 @@ function Carousel({ sample }) {
   )
 }
 
-function Idle({ data }) {
+function Idle({ data, sample }) {
   const total = data.prizes.length
   const won = data.prizes.filter((p) => p.winner).length
   const lead =
@@ -83,7 +81,7 @@ function Idle({ data }) {
           </div>
         </div>
       </div>
-      <Carousel sample={data.sample} />
+      <Carousel sample={sample} />
     </div>
   )
 }
@@ -120,7 +118,7 @@ function Pending({ prize, sample }) {
     <div className="vd-scene vd-pending">
       <div className="vd-eyebrow vd-eyebrow--center">
         <span className="vd-dot vd-dot--pulse" />
-        Пул участников зафиксирован
+        Определяем победителя
       </div>
       <h2 className="vd-scene-title">{prize.title}</h2>
       <div className="vd-pending-spin">{t?.ticket ?? '•••••••'}</div>
@@ -129,23 +127,16 @@ function Pending({ prize, sample }) {
           <>
             <div className="vd-countdown-num">{left}</div>
             <div className="vd-countdown-text">
-              {plural(left, ['секунда', 'секунды', 'секунд'])} до случайного числа
-              <span>drand, раунд №{d.round}</span>
+              Победитель будет объявлен
+              <span>через {left} {plural(left, ['секунду', 'секунды', 'секунд'])}</span>
             </div>
           </>
         ) : (
           <>
             <div className="vd-countdown-num vd-countdown-num--wait" />
-            <div className="vd-countdown-text">
-              Получаем случайное число
-              <span>drand, раунд №{d.round}…</span>
-            </div>
+            <div className="vd-countdown-text">Ещё мгновение…</div>
           </>
         )}
-      </div>
-      <div className="vd-pending-meta">
-        В пуле {fmt(d.poolSize)} {plural(d.poolSize, ['билет', 'билета', 'билетов'])} · poolHash{' '}
-        <code>{d.poolHash.slice(0, 16)}…</code>
       </div>
     </div>
   )
@@ -157,7 +148,8 @@ export default function Public() {
   const seen = useRef(null)
   const [queue, setQueue] = useState([])
   const [revealed, setRevealed] = useState(() => new Set())
-  const sampleRef = useRef([])
+  const [sample, setSample] = useState([])
+  const sampleCount = useRef(-1)
 
   useEffect(() => {
     let stop = false
@@ -167,7 +159,10 @@ export default function Public() {
         if (stop) return
         setError(false)
         setData(d)
-        sampleRef.current = d.sample
+        if (sampleCount.current !== d.ticketCount) {
+          sampleCount.current = d.ticketCount
+          setSample(d.sample)
+        }
         const winners = d.prizes.filter((p) => p.winner).map((p) => ({ ...p.winner, prizeTitle: p.title }))
         if (seen.current === null) {
           seen.current = new Set(winners.map((w) => w.id))
@@ -218,7 +213,7 @@ export default function Public() {
   const status = current
     ? 'Определяем победителя'
     : pendingPrize
-      ? 'Пул зафиксирован'
+      ? 'Определяем победителя'
       : data.prizes.length > 0 && prizesWon === data.prizes.length
         ? 'Розыгрыш завершён'
         : prizesWon > 0
@@ -243,17 +238,17 @@ export default function Public() {
               key={current.id}
               winner={current}
               prizeTitle={current.prizeTitle}
-              sample={sampleRef.current}
+              sample={sample}
               onDone={onDone}
             />
           ) : pendingPrize ? (
-            <Pending prize={pendingPrize} sample={data.sample} />
+            <Pending prize={pendingPrize} sample={sample} />
           ) : (
-            <Idle data={data} />
+            <Idle data={data} sample={sample} />
           )}
         </section>
 
-        <Marquee sample={data.sample} />
+        <Marquee sample={sample} />
 
         <section className="vd-prizes">
           <div className="vd-section-head">
@@ -299,14 +294,6 @@ export default function Public() {
             })}
           </div>
         </section>
-
-        <footer className="vd-footer">
-          <IconShield className="vd-footer-icon" />
-          <p>
-            Победители выбираются публичным генератором случайности drand и проверяемым алгоритмом.{' '}
-            <Link to="/fair">Проверить честность розыгрыша →</Link>
-          </p>
-        </footer>
       </div>
     </div>
   )

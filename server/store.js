@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import crypto from 'node:crypto'
-import { canonicalList, listText, listHash, buildPool, roundAt, roundTime, chooseWinner, verifyBeacon, beaconUrl, DRAND } from '../shared/fair.js'
+import { canonicalList, listText, listHash, buildPool, roundAt, roundTime, commitmentHash, chooseWinner, verifyBeacon, beaconUrl, DRAND } from '../shared/fair.js'
 
 const DIR = path.resolve('data')
 const LISTS_DIR = path.join(DIR, 'lists')
@@ -130,7 +130,9 @@ export function startDraw(prizeId, allowMultiple) {
     chainHash: DRAND.chainHash,
     round,
     revealAt: new Date(roundTime(round)).toISOString(),
+    prevCommitment: state.draws.at(-1)?.commitment || '',
   }
+  draw.commitment = commitmentHash(draw)
   state.draws.push(draw)
   saveState()
   scheduleFinalize(draw)

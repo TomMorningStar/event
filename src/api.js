@@ -35,9 +35,9 @@ export const api = {
   draw: (id) => request(`/api/admin/prizes/${id}/draw`, json('POST')),
   removeWinner: (id, reason) => request(`/api/admin/prizes/${id}/winner`, json('DELETE', { reason })),
   clients: (params) => request(`/api/admin/clients?${new URLSearchParams(params)}`),
-  draws: () => request('/api/public/draws'),
+  draws: () => request('/api/admin/draws'),
   listText: async (hash) => {
-    const r = await fetch(`/api/public/lists/${hash}.txt`)
+    const r = await fetch(`/api/admin/lists/${hash}.txt`, { credentials: 'same-origin' })
     if (!r.ok) throw new Error('Файл списка не найден')
     return r.text()
   },

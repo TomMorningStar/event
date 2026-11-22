@@ -74,7 +74,7 @@ export default function Admin() {
         <div>
           <a className="btn" href="/" target="_blank" rel="noreferrer">Клиентская страница ↗</a>
           <Link className="btn" to="/admin/clients">Клиенты</Link>
-          <a className="btn" href="/fair" target="_blank" rel="noreferrer">Проверка ↗</a>
+          <Link className="btn" to="/admin/fair">Проверка</Link>
           <button className="btn" onClick={logout}>Выйти</button>
         </div>
       </header>
@@ -137,6 +137,7 @@ export default function Admin() {
                 ) : p.pending ? (
                   <div className="muted">
                     ⏳ Ждём раунд drand №{p.pending.round} ({new Date(p.pending.revealAt).toLocaleTimeString('ru-RU')})
+                    <div className="small">Код фиксации: <code className="break">{p.pending.commitment}</code></div>
                     {p.pending.error && <div className="error small">{p.pending.error} — повторяем…</div>}
                   </div>
                 ) : (

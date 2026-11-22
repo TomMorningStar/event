@@ -68,29 +68,39 @@ export function chooseWinner(pool, poolHash, drawNo, randomness) {
   return { seed, index, ticket: pool[index] }
 }
 
+export function commitmentHash(d) {
+  return sha256Hex(JSON.stringify([ALGO_VERSION, d.drawNo, d.prevCommitment || '', d.listHash, d.poolHash, d.round, d.rule, d.committedAt]))
+}
+
+export function verifyChain(draws) {
+  return draws.every((d, i) => d.commitment === commitmentHash(d) && (d.prevCommitment || '') === (i ? draws[i - 1].commitment : ''))
+}
+
 export function verifyDraw(draw, sortedList) {
   const steps = []
-  const add = (name, ok, detail = '') => steps.push({ name, ok, detail })
+  const add = (group, name, ok, detail = '') => steps.push({ group, name, ok, detail })
 
   const lh = listHash(sortedList)
-  add('Хэш списка билетов совпадает', lh === draw.listHash, lh)
+  add('list', 'Хэш списка билетов совпадает', lh === draw.listHash, lh)
 
   const pool = buildPool(sortedList, draw.excluded || [])
   const ph = listHash(pool)
-  add('Хэш пула (список минус исключённые) совпадает', ph === draw.poolHash, ph)
-  add('Размер пула совпадает', pool.length === draw.poolSize, String(pool.length))
+  add('list', 'Хэш пула (список минус исключённые) совпадает', ph === draw.poolHash, ph)
+  add('list', 'Размер пула совпадает', pool.length === draw.poolSize, String(pool.length))
 
-  add(
-    'Раунд drand выбран после фиксации пула',
-    draw.committedAt ? new Date(draw.committedAt).getTime() < roundTime(draw.round) : true,
-    `фиксация ${draw.committedAt}, раунд ${draw.round} выпущен ${new Date(roundTime(draw.round)).toISOString()}`,
-  )
-
-  add('BLS-подпись drand валидна, randomness = SHA-256(signature)', verifyBeacon(draw), `раунд ${draw.round}`)
+  add('random', 'BLS-подпись drand валидна, randomness = SHA-256(signature)', verifyBeacon(draw), `раунд ${draw.round}`)
 
   const { index, ticket } = chooseWinner(pool, draw.poolHash, draw.drawNo, draw.randomness)
-  add('Индекс победителя пересчитан', index === draw.index, String(index))
-  add('Билет победителя совпадает', ticket === draw.ticket, ticket)
+  add('calc', 'Индекс победителя пересчитан', index === draw.index, String(index))
+  add('calc', 'Билет победителя совпадает', ticket === draw.ticket, ticket)
+
+  add(
+    'time',
+    'Раунд drand выпущен позже времени фиксации',
+    new Date(draw.committedAt).getTime() < roundTime(draw.round),
+    `фиксация ${draw.committedAt}, раунд ${draw.round} выпущен ${new Date(roundTime(draw.round)).toISOString()}`,
+  )
+  add('time', 'Код фиксации совпадает с данными розыгрыша', commitmentHash(draw) === draw.commitment, draw.commitment)
 
   return steps
 }
