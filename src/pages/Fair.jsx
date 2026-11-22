@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import fairSource from '../../shared/fair.js?raw'
 import { api } from '../api.js'
 import { verifyDraw, verifyChain, beaconUrl, DRAND, roundTime } from '../../shared/fair.js'
 import Backdrop from '../components/brand/Backdrop.jsx'
 import TopBar from '../components/brand/TopBar.jsx'
+import AdminNav from '../components/brand/AdminNav.jsx'
 import { plural } from '../components/brand/text.jsx'
-import { IconArrowLeft, IconCheck, IconCopy, IconCross, IconDownload, IconShield } from '../components/brand/icons.jsx'
+import { IconCheck, IconCopy, IconCross, IconDownload, IconShield } from '../components/brand/icons.jsx'
 import '../styles/public.css'
 import '../styles/fair.css'
+import '../styles/admin.css'
 
 const STATUS = { pending: 'Ожидает drand', done: 'Завершён', cancelled: 'Отменён' }
 const CHECKS = [
@@ -272,10 +274,7 @@ export default function Fair() {
       <Backdrop />
       <div className="vd-page vf">
         <TopBar>
-          <Link to="/admin" className="vd-btn vd-btn--ghost">
-            <IconArrowLeft />
-            Админка
-          </Link>
+          <AdminNav />
         </TopBar>
 
         <section className="vf-hero">

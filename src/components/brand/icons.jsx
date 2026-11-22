@@ -37,6 +37,36 @@ export const IconCopy = (p) => (
     <path d="M15.5 5.5v-.5a2 2 0 0 0-2-2H6a2.5 2.5 0 0 0-2.5 2.5v7.5a2 2 0 0 0 2 2h.5" />
   </Svg>
 )
+export const IconUpload = (p) => (
+  <Svg {...p}>
+    <path d="M12 16V4M7 8.5l5-5 5 5M5 14v4.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V14" />
+  </Svg>
+)
+export const IconPlay = (p) => (
+  <Svg {...p}>
+    <path d="M8 5.5v13l10.5-6.5L8 5.5Z" />
+  </Svg>
+)
+export const IconTrash = (p) => (
+  <Svg {...p}>
+    <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" />
+  </Svg>
+)
+export const IconUndo = (p) => (
+  <Svg {...p}>
+    <path d="M9 7 4.5 11.5 9 16M5 11.5h9.5a5 5 0 0 1 0 10H12" />
+  </Svg>
+)
+export const IconLogout = (p) => (
+  <Svg {...p}>
+    <path d="M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14M10 16l4-4-4-4M14 12H4.5" />
+  </Svg>
+)
+export const IconPlus = (p) => (
+  <Svg {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Svg>
+)
 export const IconExternal = (p) => (
   <Svg {...p}>
     <path d="M14 4h6v6M20 4l-9 9M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10" />
