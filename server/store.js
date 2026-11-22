@@ -3,7 +3,7 @@ import path from 'node:path'
 import crypto from 'node:crypto'
 import { canonicalList, listText, listHash, buildPool, roundAt, roundTime, commitmentHash, chooseWinner, verifyBeacon, beaconUrl, DRAND } from '../shared/fair.js'
 
-const DIR = path.resolve('data')
+const DIR = path.resolve(process.env.DATA_DIR || 'data')
 const LISTS_DIR = path.join(DIR, 'lists')
 const TICKETS_FILE = path.join(DIR, 'tickets.json')
 const STATE_FILE = path.join(DIR, 'state.json')
@@ -29,6 +29,7 @@ let ticketsDb = readJson(TICKETS_FILE, { tickets: [], listHash: null, stats: nul
 
 let state = readJson(STATE_FILE, { prizes: [], draws: [] })
 state.draws ??= []
+state.stage ??= null
 delete state.winners
 
 const saveState = () => writeJson(STATE_FILE, state)
@@ -73,10 +74,29 @@ export function addPrize(title) {
   return prize
 }
 
+export function showPrize(prizeId) {
+  if (!state.prizes.some((p) => p.id === prizeId)) throw fail('Приз не найден', 404)
+  if (state.draws.some((d) => d.status === 'pending')) throw fail('Идёт розыгрыш — дождитесь результата', 409)
+  if (activeDraw(prizeId)) throw fail('Этот приз уже разыгран', 409)
+  const current = state.stage && activeDraw(state.stage.prizeId)
+  if (current?.status === 'done') current.dismissed = true
+  state.stage = { prizeId }
+  saveState()
+}
+
+export function nextStage(prizeId) {
+  if (state.draws.some((d) => d.prizeId === prizeId && d.status === 'pending')) throw fail('Идёт розыгрыш — дождитесь результата', 409)
+  const d = activeDraw(prizeId)
+  if (d?.status === 'done') d.dismissed = true
+  if (state.stage?.prizeId === prizeId) state.stage = null
+  saveState()
+}
+
 export function deletePrize(id) {
   if (state.draws.some((d) => d.prizeId === id && d.status === 'pending')) throw fail('Идёт розыгрыш этого приза', 409)
 
   state.prizes = state.prizes.filter((p) => p.id !== id)
+  if (state.stage?.prizeId === id) state.stage = null
   state.draws.forEach((d) => {
     if (d.prizeId === id && d.status === 'done') {
       d.status = 'cancelled'
@@ -102,6 +122,7 @@ export function startDraw(prizeId, allowMultiple) {
   const prize = state.prizes.find((p) => p.id === prizeId)
   if (!prize) throw fail('Приз не найден', 404)
   if (activeDraw(prizeId)) throw fail('Этот приз уже разыгран или разыгрывается', 409)
+  if (state.stage?.prizeId !== prizeId) throw fail('Сначала нажмите «Показать» — приз должен быть на экране', 409)
   if (!ticketsDb.tickets.length) throw fail('Список билетов пуст — загрузите Excel', 400)
 
   const { byTicket, sorted } = index()

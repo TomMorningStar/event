@@ -5,7 +5,7 @@ import Backdrop from '../components/brand/Backdrop.jsx'
 import TopBar from '../components/brand/TopBar.jsx'
 import AdminNav from '../components/brand/AdminNav.jsx'
 import { PersonName } from '../components/brand/text.jsx'
-import { IconCross, IconDownload, IconPlay, IconPlus, IconTrash, IconUndo, IconUpload } from '../components/brand/icons.jsx'
+import { IconArrowRight, IconCross, IconDownload, IconExternal, IconPlay, IconPlus, IconTrash, IconUndo, IconUpload } from '../components/brand/icons.jsx'
 import '../styles/public.css'
 import '../styles/forms.css'
 import '../styles/admin.css'
@@ -204,7 +204,9 @@ export default function Admin() {
                     <div className="va-prize-head">
                       <span className="va-prize-no">Приз {String(i + 1).padStart(2, '0')}</span>
                       {p.winner ? (
-                        <span className="va-tag is-won">Разыгран</span>
+                        p.dismissed ? <span className="va-tag is-won">Разыгран</span> : <span className="va-tag is-pending">Победитель на экране</span>
+                      ) : p.onStage ? (
+                        <span className="va-tag is-pending">На экране</span>
                       ) : p.pending ? (
                         <span className="va-tag is-pending"><span className="vd-dot vd-dot--pulse" />Идёт розыгрыш</span>
                       ) : (
@@ -234,16 +236,34 @@ export default function Admin() {
                     )}
                   </div>
                   <div className="va-actions">
-                    {p.winner ? (
+                    {p.winner && (
                       <button className="vd-btn vd-btn--ghost" disabled={!!busy} onClick={() => cancel(p)}>
                         <IconUndo />
                         Отменить результат
                       </button>
-                    ) : p.pending ? null : (
-                      <button className="vd-btn vd-btn--primary" disabled={!!busy || tickets.count === 0} onClick={() => run('draw', () => api.draw(p.id))}>
-                        <IconPlay />
-                        Разыграть
+                    )}
+                    {p.winner && !p.dismissed && (
+                      <button className="vd-btn vd-btn--primary" disabled={!!busy} onClick={() => run('next', () => api.next(p.id))}>
+                        <IconArrowRight />
+                        Дальше
                       </button>
+                    )}
+                    {!p.winner && !p.pending && !p.onStage && (
+                      <button className="vd-btn vd-btn--primary" disabled={!!busy || tickets.count === 0 || hasPending} onClick={() => run('show', () => api.show(p.id))}>
+                        <IconExternal />
+                        Показать
+                      </button>
+                    )}
+                    {!p.winner && !p.pending && p.onStage && (
+                      <>
+                        <button className="vd-btn vd-btn--primary" disabled={!!busy || tickets.count === 0} onClick={() => run('draw', () => api.draw(p.id))}>
+                          <IconPlay />
+                          Крутить
+                        </button>
+                        <button className="vd-btn vd-btn--ghost" disabled={!!busy} onClick={() => run('next', () => api.next(p.id))}>
+                          Убрать
+                        </button>
+                      </>
                     )}
                     <button
                       className="vd-btn vd-btn--danger"

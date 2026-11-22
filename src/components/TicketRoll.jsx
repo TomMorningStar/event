@@ -5,8 +5,8 @@ const CELLS = 26
 // фирменные цвета ВКУСДОМ: лайм, белый, оттенки зелёного
 const CONFETTI_COLORS = ['#c7d301', '#ffffff', '#c7d301', '#1b6644', '#e3ec6b', '#005a35']
 
-function Reel({ digit, index }) {
-  const [go, setGo] = useState(false)
+function Reel({ digit, index, instant }) {
+  const [go, setGo] = useState(instant)
   const strip = useMemo(() => {
     const arr = Array.from({ length: CELLS - 1 }, () => Math.floor(Math.random() * 10))
     arr.push(digit)
@@ -14,11 +14,12 @@ function Reel({ digit, index }) {
   }, [digit])
 
   useEffect(() => {
+    if (instant) return
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setGo(true)))
     return () => cancelAnimationFrame(id)
-  }, [])
+  }, [instant])
 
-  const duration = 2.6 + index * 0.45
+  const duration = instant ? 0 : 2.6 + index * 0.45
   return (
     <span className="reel">
       <span
@@ -38,20 +39,17 @@ function Reel({ digit, index }) {
   )
 }
 
-export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
+export default function TicketRoll({ winner, prizeTitle, sample, instant = false }) {
   const digits = [...winner.ticket]
   const total = 2.6 + (digits.length - 1) * 0.45
-  const [phase, setPhase] = useState('roll')
+  const [phase, setPhase] = useState(instant ? 'reveal' : 'roll')
   const [shuffle, setShuffle] = useState(sample[0])
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase('reveal'), total * 1000 + 300)
-    const t2 = setTimeout(() => onDone?.(), total * 1000 + 4500)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
-  }, [total, onDone])
+    if (instant) return
+    const t = setTimeout(() => setPhase('reveal'), total * 1000 + 300)
+    return () => clearTimeout(t)
+  }, [total, instant])
 
   useEffect(() => {
     if (phase !== 'roll' || !sample.length) return
@@ -98,7 +96,7 @@ export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
         </div>
         <div className="reels" key={winner.id}>
           {digits.map((d, i) => (
-            <Reel key={i} digit={Number(d)} index={i} />
+            <Reel key={i} digit={Number(d)} index={i} instant={instant} />
           ))}
         </div>
         <div className={`roll-person ${revealed ? '' : 'blurred'}`}>
@@ -106,7 +104,7 @@ export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
           <div className="roll-phone">{revealed ? winner.phone : shuffle?.phone}</div>
         </div>
       </div>
-      {revealed && (
+      {revealed && !instant && (
         <div className="confetti" aria-hidden>
           {confetti.map((c) => (
             <i

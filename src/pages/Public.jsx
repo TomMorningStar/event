@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api.js'
 import TicketRoll from '../components/TicketRoll.jsx'
 import Backdrop from '../components/brand/Backdrop.jsx'
@@ -102,8 +102,20 @@ function Marquee({ sample }) {
   )
 }
 
-function Pending({ prize, sample }) {
-  const d = prize.pending
+function Announce({ stage }) {
+  return (
+    <div className="vd-scene vd-announce">
+      <div className="vd-eyebrow vd-eyebrow--center">
+        <span className="vd-dot vd-dot--pulse" />
+        Сейчас разыгрывается
+      </div>
+      <h2 className="vd-announce-prize" key={stage.prizeId}>{stage.title}</h2>
+      <p className="vd-announce-hint">Скоро узнаем имя победителя</p>
+    </div>
+  )
+}
+
+function Pending({ stage, sample }) {
   const [now, setNow] = useState(Date.now())
   const [t, setT] = useState(sample[0])
   useEffect(() => {
@@ -113,14 +125,14 @@ function Pending({ prize, sample }) {
     }, 90)
     return () => clearInterval(id)
   }, [sample])
-  const left = Math.max(0, Math.ceil((new Date(d.revealAt).getTime() - now) / 1000))
+  const left = Math.max(0, Math.ceil((new Date(stage.revealAt).getTime() - now) / 1000))
   return (
     <div className="vd-scene vd-pending">
       <div className="vd-eyebrow vd-eyebrow--center">
         <span className="vd-dot vd-dot--pulse" />
         Определяем победителя
       </div>
-      <h2 className="vd-scene-title">{prize.title}</h2>
+      <h2 className="vd-scene-title">{stage.title}</h2>
       <div className="vd-pending-spin">{t?.ticket ?? '•••••••'}</div>
       <div className="vd-countdown">
         {left > 0 ? (
@@ -145,11 +157,9 @@ function Pending({ prize, sample }) {
 export default function Public() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(false)
-  const seen = useRef(null)
-  const [queue, setQueue] = useState([])
-  const [revealed, setRevealed] = useState(() => new Set())
   const [sample, setSample] = useState([])
   const sampleCount = useRef(-1)
+  const watched = useRef(new Set())
 
   useEffect(() => {
     let stop = false
@@ -158,44 +168,24 @@ export default function Public() {
         const d = await api.publicState()
         if (stop) return
         setError(false)
+        const st = d.stage
+        if (st?.phase === 'spinning') watched.current.add(st.prizeId)
+        else if (!st || st.phase === 'announce') watched.current.clear()
         setData(d)
         if (sampleCount.current !== d.ticketCount) {
           sampleCount.current = d.ticketCount
           setSample(d.sample)
-        }
-        const winners = d.prizes.filter((p) => p.winner).map((p) => ({ ...p.winner, prizeTitle: p.title }))
-        if (seen.current === null) {
-          seen.current = new Set(winners.map((w) => w.id))
-          setRevealed(new Set(seen.current))
-        } else {
-          const fresh = winners.filter((w) => !seen.current.has(w.id))
-          if (fresh.length) {
-            fresh.forEach((w) => seen.current.add(w.id))
-            setQueue((q) => [...q, ...fresh])
-          }
-
-          const ids = new Set(winners.map((w) => w.id))
-          setRevealed((r) => new Set([...r].filter((id) => ids.has(id))))
         }
       } catch {
         if (!stop) setError(true)
       }
     }
     load()
-    const id = setInterval(load, 2500)
+    const id = setInterval(load, 1500)
     return () => {
       stop = true
       clearInterval(id)
     }
-  }, [])
-
-  const current = queue[0]
-  const pendingPrize = data?.prizes.find((p) => p.pending)
-  const onDone = useCallback(() => {
-    setQueue((q) => {
-      if (q[0]) setRevealed((r) => new Set(r).add(q[0].id))
-      return q.slice(1)
-    })
   }, [])
 
   if (!data)
@@ -209,17 +199,22 @@ export default function Public() {
       </div>
     )
 
-  const prizesWon = data.prizes.filter((p) => p.winner && revealed.has(p.winner.id)).length
-  const status = current
-    ? 'Определяем победителя'
-    : pendingPrize
-      ? 'Определяем победителя'
-      : data.prizes.length > 0 && prizesWon === data.prizes.length
-        ? 'Розыгрыш завершён'
-        : prizesWon > 0
-          ? 'Идёт розыгрыш'
-          : 'Скоро начнём'
-  const live = Boolean(current || pendingPrize)
+  const stage = data.stage
+  const prizesWon = data.prizes.filter((p) => p.winner).length
+  const live = stage?.phase === 'spinning'
+  const status = stage
+    ? stage.phase === 'announce'
+      ? 'Скоро разыгрываем'
+      : stage.phase === 'spinning'
+        ? 'Определяем победителя'
+        : 'Поздравляем!'
+    : data.prizes.length > 0 && prizesWon === data.prizes.length
+      ? 'Розыгрыш завершён'
+      : prizesWon > 0
+        ? 'Идёт розыгрыш'
+        : 'Скоро начнём'
+  const stageClass = !stage ? 'vd-stage--idle' : stage.phase === 'winner' ? 'vd-stage--roll' : stage.phase === 'spinning' ? 'vd-stage--pending' : 'vd-stage--announce'
+  const prizes = data.prizes.map((p, i) => ({ p, i })).sort((a, b) => Boolean(a.p.winner) - Boolean(b.p.winner))
 
   return (
     <div className="vd">
@@ -232,19 +227,18 @@ export default function Public() {
           </div>
         </TopBar>
 
-        <section className={`vd-stage ${current ? 'vd-stage--roll' : pendingPrize ? 'vd-stage--pending' : 'vd-stage--idle'}`}>
-          {current ? (
+        <section className={`vd-stage ${stageClass}`}>
+          {!stage && <Idle data={data} sample={sample} />}
+          {stage?.phase === 'announce' && <Announce stage={stage} />}
+          {stage?.phase === 'spinning' && <Pending stage={stage} sample={sample} />}
+          {stage?.phase === 'winner' && (
             <TicketRoll
-              key={current.id}
-              winner={current}
-              prizeTitle={current.prizeTitle}
+              key={stage.winner.id}
+              winner={stage.winner}
+              prizeTitle={stage.title}
               sample={sample}
-              onDone={onDone}
+              instant={!watched.current.has(stage.prizeId)}
             />
-          ) : pendingPrize ? (
-            <Pending prize={pendingPrize} sample={sample} />
-          ) : (
-            <Idle data={data} sample={sample} />
           )}
         </section>
 
@@ -261,37 +255,33 @@ export default function Public() {
           </div>
           {data.prizes.length === 0 && <p className="vd-empty">Призы пока не добавлены</p>}
           <div className="vd-prize-grid">
-            {data.prizes.map((p, i) => {
-              const show = p.winner && revealed.has(p.winner.id)
-              const drawing = !show && (p.winner || p.pending)
-              return (
-                <article key={p.id} className={`vd-prize ${show ? 'is-won' : ''} ${drawing ? 'is-drawing' : ''}`}>
-                  <div className="vd-prize-head">
-                    <span className="vd-prize-no">Приз {String(i + 1).padStart(2, '0')}</span>
-                    {show && <span className="vd-badge">Победитель</span>}
+            {prizes.map(({ p, i }) => (
+              <article key={p.id} className={`vd-prize ${p.winner ? 'is-won' : ''} ${!p.winner && p.live ? 'is-drawing' : ''}`}>
+                <div className="vd-prize-head">
+                  <span className="vd-prize-no">Приз {String(i + 1).padStart(2, '0')}</span>
+                  {p.winner && <span className="vd-badge">Победитель</span>}
+                </div>
+                <div className="vd-prize-title">{p.title}</div>
+                {p.winner ? (
+                  <div className="vd-prize-winner">
+                    <div className="vd-pw-ticket">№ {p.winner.ticket}</div>
+                    <PersonName className="vd-pw-name" name={p.winner.name} />
+                    <div className="vd-pw-phone">{p.winner.phone}</div>
                   </div>
-                  <div className="vd-prize-title">{p.title}</div>
-                  {show ? (
-                    <div className="vd-prize-winner">
-                      <div className="vd-pw-ticket">№ {p.winner.ticket}</div>
-                      <PersonName className="vd-pw-name" name={p.winner.name} />
-                      <div className="vd-pw-phone">{p.winner.phone}</div>
-                    </div>
-                  ) : (
-                    <div className="vd-prize-wait">
-                      {drawing ? (
-                        <>
-                          <span className="vd-dot vd-dot--pulse" />
-                          Определяется…
-                        </>
-                      ) : (
-                        'Ожидает розыгрыша'
-                      )}
-                    </div>
-                  )}
-                </article>
-              )
-            })}
+                ) : (
+                  <div className="vd-prize-wait">
+                    {p.live ? (
+                      <>
+                        <span className="vd-dot vd-dot--pulse" />
+                        Сейчас на сцене
+                      </>
+                    ) : (
+                      'Ожидает розыгрыша'
+                    )}
+                  </div>
+                )}
+              </article>
+            ))}
           </div>
         </section>
       </div>

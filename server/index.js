@@ -67,7 +67,7 @@ const adminState = () => {
     tickets: store.getTicketsMeta(),
     prizes: prizes.map((p) => {
       const d = store.activeDraw(p.id)
-      return { ...p, pending: d?.status === 'pending' ? { round: d.round, revealAt: d.revealAt, error: d.lastError, commitment: d.commitment } : null, winner: d?.status === 'done' ? d : null }
+      return { ...p, onStage: store.getState().stage?.prizeId === p.id, dismissed: Boolean(d?.dismissed), pending: d?.status === 'pending' ? { round: d.round, revealAt: d.revealAt, error: d.lastError, commitment: d.commitment } : null, winner: d?.status === 'done' ? d : null }
     }),
     history: draws.filter((d) => d.status === 'cancelled').map(({ excluded, ...d }) => d),
   }
@@ -106,6 +106,8 @@ app.post('/api/admin/prizes', requireAdmin, (req, res) => {
   handle(() => store.addPrize(title))(req, res)
 })
 app.delete('/api/admin/prizes/:id', requireAdmin, handle((req) => store.deletePrize(req.params.id)))
+app.post('/api/admin/prizes/:id/show', requireAdmin, handle((req) => store.showPrize(req.params.id)))
+app.post('/api/admin/prizes/:id/next', requireAdmin, handle((req) => store.nextStage(req.params.id)))
 app.post('/api/admin/prizes/:id/draw', requireAdmin, handle((req) => store.startDraw(req.params.id, ALLOW_MULTIPLE)))
 app.delete(
   '/api/admin/prizes/:id/winner',
@@ -136,7 +138,6 @@ const publicDraw = ({ name, phone, ...d }, withExcluded) => ({
 })
 
 app.get('/api/public/state', (_req, res) => {
-  const { prizes } = store.getState()
   const all = store.getTickets()
   const sample = []
   for (let i = 0; i < Math.min(60, all.length); i++) {
@@ -144,17 +145,28 @@ app.get('/api/public/state', (_req, res) => {
     const t = all[crypto.randomInt(all.length)]
     sample.push({ ticket: t[0], name: t[1], phone: maskPhone(t[2]) })
   }
+  const { prizes, stage } = store.getState()
+  const onStage = stage && prizes.find((p) => p.id === stage.prizeId)
+  let stagePayload = null
+  if (onStage) {
+    const d = store.activeDraw(onStage.id)
+    const base = { prizeId: onStage.id, title: onStage.title }
+    if (!d) stagePayload = { phase: 'announce', ...base }
+    else if (d.status === 'pending') stagePayload = { phase: 'spinning', ...base, revealAt: d.revealAt }
+    else stagePayload = { phase: 'winner', ...base, winner: { id: d.id, ticket: d.ticket, name: d.name, phone: maskPhone(d.phone), drawnAt: d.drawnAt } }
+  }
   res.json({
     ticketCount: all.length,
     sample,
+    stage: stagePayload,
     prizes: prizes.map((p) => {
       const d = store.activeDraw(p.id)
       return {
         id: p.id,
         title: p.title,
-        pending: d?.status === 'pending' ? { revealAt: d.revealAt } : null,
+        live: stage?.prizeId === p.id,
         winner:
-          d?.status === 'done'
+          d?.status === 'done' && d.dismissed
             ? { id: d.id, ticket: d.ticket, name: d.name, phone: maskPhone(d.phone), drawnAt: d.drawnAt }
             : null,
       }

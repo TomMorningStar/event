@@ -382,3 +382,18 @@
   .vd *, .vd *::before, .vd *::after { animation: none !important; }
   .vd .vd-win-ticket, .vd .reel, .vd .reel-cell { transition: none; }
 }
+
+
+.vd-announce { text-align: center; }
+.vd-announce-prize {
+  margin: 0 auto; max-width: 18ch; color: var(--vd-lime);
+  font-weight: 700; line-height: 1; letter-spacing: -0.025em;
+  font-size: clamp(2.8rem, 8vw, 7.4rem); overflow-wrap: anywhere;
+  animation: vd-announce-in 0.8s cubic-bezier(0.2, 1.1, 0.3, 1) both;
+}
+.vd-announce-hint { margin: clamp(18px, 2.4vw, 34px) 0 0; color: var(--vd-text-muted); font-weight: 300; font-size: clamp(1.05rem, 1.6vw, 1.5rem); }
+@keyframes vd-announce-in {
+  from { opacity: 0; transform: translateY(24px) scale(0.94); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@media (prefers-reduced-motion: reduce) { .vd-announce-prize { animation: none; } }

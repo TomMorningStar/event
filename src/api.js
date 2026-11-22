@@ -32,6 +32,8 @@ export const api = {
   },
   addPrize: (title) => request('/api/admin/prizes', json('POST', { title })),
   deletePrize: (id) => request(`/api/admin/prizes/${id}`, json('DELETE')),
+  show: (id) => request(`/api/admin/prizes/${id}/show`, json('POST')),
+  next: (id) => request(`/api/admin/prizes/${id}/next`, json('POST')),
   draw: (id) => request(`/api/admin/prizes/${id}/draw`, json('POST')),
   removeWinner: (id, reason) => request(`/api/admin/prizes/${id}/winner`, json('DELETE', { reason })),
   clients: (params) => request(`/api/admin/clients?${new URLSearchParams(params)}`),
