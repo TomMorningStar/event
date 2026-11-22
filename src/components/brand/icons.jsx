@@ -67,6 +67,22 @@ export const IconPlus = (p) => (
     <path d="M12 5v14M5 12h14" />
   </Svg>
 )
+export const IconSearch = (p) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-4.4-4.4" />
+  </Svg>
+)
+export const IconChevron = (p) => (
+  <Svg {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Svg>
+)
+export const IconArrowRight = (p) => (
+  <Svg {...p}>
+    <path d="M5 12h14M13 6l6 6-6 6" />
+  </Svg>
+)
 export const IconExternal = (p) => (
   <Svg {...p}>
     <path d="M14 4h6v6M20 4l-9 9M18 14v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10" />
