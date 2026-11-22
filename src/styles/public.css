@@ -49,6 +49,28 @@
   padding: clamp(18px, 2.6vw, 32px) 0;
 }
 .vd-logo { height: clamp(36px, 3.6vw, 54px); width: auto; display: block; }
+.vd-logo-link { display: block; border-radius: 8px; }
+.vd-logo-link:focus-visible { outline: 2px solid var(--vd-lime); outline-offset: 6px; }
+
+/* спокойный фон для страниц с текстом */
+.vd--quiet .vd-bs-outline { opacity: 0.32; }
+.vd--quiet .vd-backdrop-leaf { opacity: 0.55; width: 16vmax; }
+
+/* кнопки */
+.vd-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 10px 18px; border-radius: 999px;
+  font: 500 0.95rem/1.1 var(--vd-font); text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.vd-btn .vd-icon { width: 18px; height: 18px; }
+.vd-btn:disabled { opacity: 0.55; cursor: progress; }
+.vd-btn:focus-visible { outline: 2px solid var(--vd-lime); outline-offset: 3px; }
+.vd-btn--primary { background: var(--vd-lime); color: var(--vd-ink); border: 1px solid var(--vd-lime); }
+.vd-btn--primary:hover:not(:disabled) { background: #d6e21a; }
+.vd-btn--ghost { background: rgba(10, 59, 36, 0.55); color: var(--vd-white); border: 1px solid var(--vd-line); }
+.vd-btn--ghost:hover:not(:disabled) { border-color: rgba(199, 211, 1, 0.6); color: var(--vd-lime); }
+.vd-icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .vd-status {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 9px 16px; border-radius: 999px;

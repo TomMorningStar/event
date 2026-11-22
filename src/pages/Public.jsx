@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import TicketRoll from '../components/TicketRoll.jsx'
 import Backdrop from '../components/brand/Backdrop.jsx'
+import TopBar from '../components/brand/TopBar.jsx'
+import { IconShield } from '../components/brand/icons.jsx'
 import { PersonName, plural } from '../components/brand/text.jsx'
-import logoUrl from '../assets/brand/logo-horizontal.svg'
 import signUrl from '../assets/brand/sign.svg'
 import '../styles/public.css'
 
@@ -229,13 +230,12 @@ export default function Public() {
     <div className="vd">
       <Backdrop />
       <div className="vd-page">
-        <header className="vd-top">
-          <img className="vd-logo" src={logoUrl} alt="ВКУСДОМ — гипермаркет" />
+        <TopBar>
           <div className={`vd-status ${live ? 'vd-status--live' : ''}`}>
             <span className={`vd-dot ${live ? 'vd-dot--pulse' : ''}`} />
             {status}
           </div>
-        </header>
+        </TopBar>
 
         <section className={`vd-stage ${current ? 'vd-stage--roll' : pendingPrize ? 'vd-stage--pending' : 'vd-stage--idle'}`}>
           {current ? (
@@ -301,10 +301,7 @@ export default function Public() {
         </section>
 
         <footer className="vd-footer">
-          <svg className="vd-footer-icon" viewBox="0 0 24 24" aria-hidden>
-            <path d="M12 2.5 4 5.6v6.1c0 4.7 3.3 8.6 8 9.8 4.7-1.2 8-5.1 8-9.8V5.6l-8-3.1Z" />
-            <path d="m8.5 12.2 2.4 2.4 4.7-4.9" />
-          </svg>
+          <IconShield className="vd-footer-icon" />
           <p>
             Победители выбираются публичным генератором случайности drand и проверяемым алгоритмом.{' '}
             <Link to="/fair">Проверить честность розыгрыша →</Link>
