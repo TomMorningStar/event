@@ -67,7 +67,7 @@ const adminState = () => {
     tickets: store.getTicketsMeta(),
     prizes: prizes.map((p) => {
       const d = store.activeDraw(p.id)
-      return { ...p, pending: d?.status === 'pending' ? { round: d.round, revealAt: d.revealAt, error: d.lastError } : null, winner: d?.status === 'done' ? d : null }
+      return { ...p, pending: d?.status === 'pending' ? { round: d.round, revealAt: d.revealAt, error: d.lastError, commitment: d.commitment } : null, winner: d?.status === 'done' ? d : null }
     }),
     history: draws.filter((d) => d.status === 'cancelled').map(({ excluded, ...d }) => d),
   }
@@ -146,29 +146,30 @@ app.get('/api/public/state', (_req, res) => {
   }
   res.json({
     ticketCount: all.length,
-    listHash: store.getTicketsMeta().listHash,
     sample,
     prizes: prizes.map((p) => {
       const d = store.activeDraw(p.id)
       return {
         id: p.id,
         title: p.title,
-        pending: d?.status === 'pending' ? publicDraw(d, false) : null,
-        winner: d?.status === 'done' ? publicDraw(d, false) : null,
+        pending: d?.status === 'pending' ? { revealAt: d.revealAt } : null,
+        winner:
+          d?.status === 'done'
+            ? { id: d.id, ticket: d.ticket, name: d.name, phone: maskPhone(d.phone), drawnAt: d.drawnAt }
+            : null,
       }
     }),
   })
 })
 
-app.get('/api/public/draws', (_req, res) => {
+app.get('/api/admin/draws', requireAdmin, (_req, res) => {
   res.json({ ...store.getTicketsMeta(), stats: undefined, fileName: undefined, draws: store.getState().draws.map((d) => publicDraw(d, true)) })
 })
 
-app.get('/api/public/lists/:hash.txt', (req, res) => {
+app.get('/api/admin/lists/:hash.txt', requireAdmin, (req, res) => {
   const file = store.listFile(req.params.hash)
   if (!file || !fs.existsSync(file)) return res.status(404).send('not found')
   res.setHeader('Content-Type', 'text/plain; charset=utf-8')
-  res.setHeader('Access-Control-Allow-Origin', '*')
   res.sendFile(file)
 })
 

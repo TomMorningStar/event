@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { api } from '../api.js'
 import TicketRoll from '../components/TicketRoll.jsx'
 
@@ -55,17 +54,14 @@ function Pending({ prize, sample }) {
   return (
     <div className="pending">
       <div className="roll-prize">🎁 {prize.title}</div>
-      <div className="roll-label">Пул участников зафиксирован</div>
+      <div className="roll-label">Определяем победителя</div>
       <div className="pending-spin">{t?.ticket ?? '••••••••'}</div>
       <div className="pending-info">
         {left > 0 ? (
-          <>Случайное число выпустит drand через <b>{left} с</b> — раунд №{d.round}</>
+          <>Победитель будет объявлен через <b>{left} с</b></>
         ) : (
-          <>Получаем случайное число drand, раунд №{d.round}…</>
+          <>Ещё мгновение…</>
         )}
-      </div>
-      <div className="pending-hash">
-        В пуле {d.poolSize.toLocaleString('ru-RU')} билетов · poolHash <code>{d.poolHash.slice(0, 16)}…</code>
       </div>
     </div>
   )
@@ -77,7 +73,8 @@ export default function Public() {
   const seen = useRef(null)
   const [queue, setQueue] = useState([])
   const [revealed, setRevealed] = useState(() => new Set())
-  const sampleRef = useRef([])
+  const [sample, setSample] = useState([])
+  const sampleCount = useRef(-1)
 
   useEffect(() => {
     let stop = false
@@ -87,7 +84,10 @@ export default function Public() {
         if (stop) return
         setError(false)
         setData(d)
-        sampleRef.current = d.sample
+        if (sampleCount.current !== d.ticketCount) {
+          sampleCount.current = d.ticketCount
+          setSample(d.sample)
+        }
         const winners = d.prizes.filter((p) => p.winner).map((p) => ({ ...p.winner, prizeTitle: p.title }))
         if (seen.current === null) {
           seen.current = new Set(winners.map((w) => w.id))
@@ -132,7 +132,7 @@ export default function Public() {
         <p>Участвует билетов: <b>{data.ticketCount.toLocaleString('ru-RU')}</b></p>
       </header>
 
-      <Marquee sample={data.sample} />
+      <Marquee sample={sample} />
 
       <section className="stage">
         {current ? (
@@ -140,13 +140,13 @@ export default function Public() {
             key={current.id}
             winner={current}
             prizeTitle={current.prizeTitle}
-            sample={sampleRef.current}
+            sample={sample}
             onDone={onDone}
           />
         ) : pendingPrize ? (
-          <Pending prize={pendingPrize} sample={data.sample} />
+          <Pending prize={pendingPrize} sample={sample} />
         ) : (
-          <Carousel sample={data.sample} />
+          <Carousel sample={sample} />
         )}
       </section>
 
@@ -173,11 +173,6 @@ export default function Public() {
           })}
         </div>
       </section>
-
-      <footer className="fair-footer">
-        🔒 Победители выбираются публичным генератором случайности drand и проверяемым алгоритмом.{' '}
-        <Link to="/fair">Проверить честность розыгрыша →</Link>
-      </footer>
     </div>
   )
 }
