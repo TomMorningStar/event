@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
+import { PersonName } from './brand/text.jsx'
 
 const CELLS = 26
+// фирменные цвета ВКУСДОМ: лайм, белый, оттенки зелёного
+const CONFETTI_COLORS = ['#c7d301', '#ffffff', '#c7d301', '#1b6644', '#e3ec6b', '#005a35']
 
 function Reel({ digit, index }) {
   const [go, setGo] = useState(false)
@@ -62,7 +65,8 @@ export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
         left: Math.random() * 100,
         delay: Math.random() * 0.6,
         dur: 2.2 + Math.random() * 2,
-        hue: Math.floor(Math.random() * 360),
+        color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
+        round: i % 4 === 0,
         rot: Math.floor(Math.random() * 720),
         key: i,
       })),
@@ -71,28 +75,48 @@ export default function TicketRoll({ winner, prizeTitle, sample, onDone }) {
 
   const revealed = phase === 'reveal'
   return (
-    <div className={`roll ${revealed ? 'revealed' : ''}`}>
-      <div className="roll-prize">🎁 {prizeTitle}</div>
-      <div className="roll-label">Номер билета</div>
-      <div className="reels" key={winner.id}>
-        {digits.map((d, i) => (
-          <Reel key={i} digit={Number(d)} index={i} />
-        ))}
+    <div className={`roll vd-roll ${revealed ? 'revealed' : ''}`}>
+      <div className="vd-eyebrow vd-eyebrow--center">
+        <span className={`vd-dot ${revealed ? '' : 'vd-dot--pulse'}`} />
+        {revealed ? 'Поздравляем!' : 'Определяем победителя'}
       </div>
-      <div className={`roll-person ${revealed ? '' : 'blurred'}`}>
-        <div className="roll-name">{revealed ? winner.name : shuffle?.name}</div>
-        <div className="roll-phone">{revealed ? winner.phone : shuffle?.phone}</div>
+      <h2 className="vd-scene-title">
+        {revealed ? (
+          <>
+            У нас есть <span>победитель!</span>
+          </>
+        ) : (
+          <>
+            Какой билет <span>победит?</span>
+          </>
+        )}
+      </h2>
+      <div className="vd-win-ticket">
+        <div className="vd-win-top">
+          <span>{revealed ? 'Выигравший билет' : 'Номер билета'}</span>
+          <span className="vd-win-prize">{prizeTitle}</span>
+        </div>
+        <div className="reels" key={winner.id}>
+          {digits.map((d, i) => (
+            <Reel key={i} digit={Number(d)} index={i} />
+          ))}
+        </div>
+        <div className={`roll-person ${revealed ? '' : 'blurred'}`}>
+          <PersonName className="roll-name" name={revealed ? winner.name : shuffle?.name} />
+          <div className="roll-phone">{revealed ? winner.phone : shuffle?.phone}</div>
+        </div>
       </div>
       {revealed && (
         <div className="confetti" aria-hidden>
           {confetti.map((c) => (
             <i
               key={c.key}
+              className={c.round ? 'is-round' : ''}
               style={{
                 left: `${c.left}%`,
                 animationDelay: `${c.delay}s`,
                 animationDuration: `${c.dur}s`,
-                background: `hsl(${c.hue} 90% 60%)`,
+                background: c.color,
                 '--rot': `${c.rot}deg`,
               }}
             />
